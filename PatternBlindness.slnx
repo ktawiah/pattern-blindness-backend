@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PatternBlindness.Api/PatternBlindness.Api.csproj" />
+    <Project Path="src/PatternBlindness.Application/PatternBlindness.Application.csproj" />
+    <Project Path="src/PatternBlindness.Domain/PatternBlindness.Domain.csproj" />
+    <Project Path="src/PatternBlindness.Infrastructure/PatternBlindness.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PatternBlindness.IntegrationTests/PatternBlindness.IntegrationTests.csproj" />
+    <Project Path="tests/PatternBlindness.UnitTests/PatternBlindness.UnitTests.csproj" />
+  </Folder>
+</Solution>
