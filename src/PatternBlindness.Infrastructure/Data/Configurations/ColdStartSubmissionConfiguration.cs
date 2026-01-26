@@ -1,0 +1,50 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PatternBlindness.Domain.Entities;
+
+namespace PatternBlindness.Infrastructure.Data.Configurations;
+
+public class ColdStartSubmissionConfiguration : IEntityTypeConfiguration<ColdStartSubmission>
+{
+  public void Configure(EntityTypeBuilder<ColdStartSubmission> builder)
+  {
+    builder.ToTable("ColdStartSubmissions");
+
+    builder.HasKey(c => c.Id);
+    builder.Property(c => c.Id).ValueGeneratedNever();
+
+    builder.Property(c => c.SubmittedAt)
+        .IsRequired();
+
+    builder.Property(c => c.ThinkingDurationSeconds)
+        .IsRequired();
+
+    builder.Property(c => c.IdentifiedSignals)
+        .HasColumnType("jsonb");
+
+    builder.Property(c => c.RejectionReason)
+        .HasMaxLength(1000);
+
+    builder.Property(c => c.CreatedAt)
+        .IsRequired();
+
+    // Relationship with chosen pattern
+    builder.HasOne(c => c.ChosenPattern)
+        .WithMany()
+        .HasForeignKey(c => c.ChosenPatternId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    // Relationship with rejected pattern (optional)
+    builder.HasOne(c => c.RejectedPattern)
+        .WithMany()
+        .HasForeignKey(c => c.RejectedPatternId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    // Ignore domain events (not persisted)
+    builder.Ignore(c => c.DomainEvents);
+
+    // Indexes
+    builder.HasIndex(c => c.AttemptId).IsUnique();
+    builder.HasIndex(c => c.ChosenPatternId);
+  }
+}
