@@ -1,0 +1,6 @@
+@PatternBlindness.Api_HostAddress = http://localhost:5125
+
+GET {{PatternBlindness.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
