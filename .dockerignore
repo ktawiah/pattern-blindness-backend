@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vs
+.vscode
+.idea
+*.user
+*.suo
+
+# Build outputs - explicit patterns
+bin/
+obj/
+out/
+**/bin/
+**/obj/
+**/out/
+src/**/bin/
+src/**/obj/
+src/**/out/
+
+# Test results
+**/TestResults
+**/coverage
+
+# Misc
+*.md
+!README.md
+Dockerfile*
+docker-compose*
+.dockerignore
+.editorconfig
+.env*
+tests/
