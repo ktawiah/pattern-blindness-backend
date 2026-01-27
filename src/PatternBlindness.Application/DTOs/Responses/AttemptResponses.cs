@@ -7,7 +7,8 @@ namespace PatternBlindness.Application.DTOs.Responses;
 /// </summary>
 public record AttemptResponse(
     Guid Id,
-    Guid ProblemId,
+    Guid? ProblemId,
+    Guid? LeetCodeProblemCacheId,
     string ProblemTitle,
     AttemptStatus Status,
     ConfidenceLevel? Confidence,
@@ -18,18 +19,38 @@ public record AttemptResponse(
     ColdStartResponse? ColdStart);
 
 /// <summary>
-/// Response containing cold start submission details.
+/// Response containing cold start submission details with multiple hypothesis support.
 /// </summary>
 public record ColdStartResponse(
     Guid Id,
     string IdentifiedSignals,
     Guid ChosenPatternId,
     string ChosenPatternName,
+    Guid? SecondaryPatternId,
+    string? SecondaryPatternName,
+    string? PrimaryVsSecondaryReason,
     Guid? RejectedPatternId,
     string? RejectedPatternName,
     string? RejectionReason,
     int ThinkingDurationSeconds,
     DateTime SubmittedAt);
+
+/// <summary>
+/// Adaptive cold start settings based on user performance.
+/// </summary>
+public record ColdStartSettingsResponse(
+    /// <summary>Recommended minimum duration in seconds (30, 90, or 180).</summary>
+    int RecommendedDurationSeconds,
+    /// <summary>Performance tier: "new", "good", "moderate", "struggling".</summary>
+    string PerformanceTier,
+    /// <summary>Recent accuracy as percentage (0-100).</summary>
+    double RecentAccuracyPercent,
+    /// <summary>Number of recent attempts used for calculation.</summary>
+    int AttemptsSampled,
+    /// <summary>Whether multiple hypothesis mode is recommended.</summary>
+    bool RecommendMultipleHypothesis,
+    /// <summary>Interview-style prompt to display.</summary>
+    string InterviewPrompt);
 
 /// <summary>
 /// Response showing the wrong-but-reasonable approaches after completing.
@@ -80,3 +101,17 @@ public record PatternWeaknessResponse(
     int WrongCount,
     double WrongPercentage,
     string Insight);
+
+/// <summary>
+/// Response containing LLM-generated reflection for a completed attempt.
+/// </summary>
+public record ReflectionResponse(
+    Guid Id,
+    string Feedback,
+    string CorrectIdentifications,
+    string MissedSignals,
+    string NextTimeAdvice,
+    string PatternTips,
+    string ConfidenceCalibration,
+    bool IsCorrectPattern,
+    DateTime GeneratedAt);

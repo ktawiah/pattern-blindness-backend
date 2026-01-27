@@ -30,8 +30,20 @@ public record ProblemWithSolutionResponse(
     string Title,
     string Description,
     Difficulty Difficulty,
+    string[] Signals,
+    string[] Constraints,
+    string[] Examples,
     Guid CorrectPatternId,
     string CorrectPatternName,
     string KeyInvariant,
     string SolutionExplanation,
-    IReadOnlyList<WrongApproachResponse> WrongApproaches);
+    IReadOnlyList<WrongApproachDto> WrongApproaches);
+
+/// <summary>
+/// Wrong approach DTO for solution response.
+/// </summary>
+public record WrongApproachDto(
+    Guid PatternId,
+    string PatternName,
+    string Explanation,
+    int FrequencyPercent);
