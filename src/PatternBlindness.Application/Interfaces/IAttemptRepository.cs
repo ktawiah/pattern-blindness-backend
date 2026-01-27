@@ -11,6 +11,7 @@ public interface IAttemptRepository
 {
   Task<Attempt?> GetByIdAsync(Guid id, CancellationToken ct = default);
   Task<Attempt?> GetByIdWithColdStartAsync(Guid id, CancellationToken ct = default);
+  Task<Attempt?> GetByIdWithReflectionAsync(Guid id, CancellationToken ct = default);
   Task<IReadOnlyList<Attempt>> GetByUserIdAsync(string userId, CancellationToken ct = default);
   Task<IReadOnlyList<Attempt>> GetByUserIdAndStatusAsync(string userId, AttemptStatus status, CancellationToken ct = default);
   Task<IReadOnlyList<Attempt>> GetRecentByUserIdAsync(string userId, int count = 10, CancellationToken ct = default);
