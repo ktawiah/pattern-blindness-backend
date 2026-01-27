@@ -35,6 +35,15 @@ public class AttemptRepository : IAttemptRepository
         .FirstOrDefaultAsync(a => a.Id == id, ct);
   }
 
+  public async Task<Attempt?> GetByIdWithReflectionAsync(Guid id, CancellationToken ct = default)
+  {
+    return await _context.Attempts
+        .Include(a => a.Problem)
+        .Include(a => a.LeetCodeProblem)
+        .Include(a => a.Reflection)
+        .FirstOrDefaultAsync(a => a.Id == id, ct);
+  }
+
   public async Task<IReadOnlyList<Attempt>> GetByUserIdAsync(string userId, CancellationToken ct = default)
   {
     return await _context.Attempts
