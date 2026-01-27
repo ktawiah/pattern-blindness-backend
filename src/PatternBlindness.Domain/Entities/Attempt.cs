@@ -18,14 +18,24 @@ public class Attempt : Entity
   public string UserId { get; private set; } = string.Empty;
 
   /// <summary>
-  /// The problem being attempted.
+  /// The legacy problem being attempted (for backwards compatibility).
   /// </summary>
-  public Guid ProblemId { get; private set; }
+  public Guid? ProblemId { get; private set; }
 
   /// <summary>
-  /// Navigation property for the problem.
+  /// Navigation property for the legacy problem.
   /// </summary>
   public Problem? Problem { get; private set; }
+
+  /// <summary>
+  /// The LeetCode problem being attempted (new dynamic flow).
+  /// </summary>
+  public Guid? LeetCodeProblemCacheId { get; private set; }
+
+  /// <summary>
+  /// Navigation property for the LeetCode problem.
+  /// </summary>
+  public LeetCodeProblemCache? LeetCodeProblem { get; private set; }
 
   /// <summary>
   /// When the attempt started.
@@ -43,9 +53,14 @@ public class Attempt : Entity
   public AttemptStatus Status { get; private set; }
 
   /// <summary>
-  /// The pattern the user chose to solve the problem.
+  /// The pattern the user chose to solve the problem (legacy, pattern ID).
   /// </summary>
   public Guid? ChosenPatternId { get; private set; }
+
+  /// <summary>
+  /// The pattern name the user chose (new flow, string-based).
+  /// </summary>
+  public string? ChosenPatternName { get; private set; }
 
   /// <summary>
   /// Navigation property for the chosen pattern.
@@ -68,12 +83,17 @@ public class Attempt : Entity
   public ColdStartSubmission? ColdStartSubmission { get; private set; }
 
   /// <summary>
+  /// The personalized reflection for this attempt.
+  /// </summary>
+  public Reflection? Reflection { get; private set; }
+
+  /// <summary>
   /// Total time spent on the problem in seconds.
   /// </summary>
   public int? TotalTimeSeconds { get; private set; }
 
   /// <summary>
-  /// Creates a new attempt.
+  /// Creates a new attempt for a legacy Problem.
   /// </summary>
   public static Attempt Create(string userId, Guid problemId)
   {
@@ -97,48 +117,88 @@ public class Attempt : Entity
   }
 
   /// <summary>
-  /// Submits the cold start thinking phase.
+  /// Creates a new attempt for a LeetCode problem.
+  /// </summary>
+  public static Attempt CreateForLeetCode(string userId, Guid leetCodeProblemCacheId)
+  {
+    if (string.IsNullOrWhiteSpace(userId))
+      throw new ArgumentException("User ID is required.", nameof(userId));
+
+    if (leetCodeProblemCacheId == Guid.Empty)
+      throw new ArgumentException("LeetCode problem cache ID is required.", nameof(leetCodeProblemCacheId));
+
+    var attempt = new Attempt
+    {
+      Id = Guid.NewGuid(),
+      UserId = userId,
+      LeetCodeProblemCacheId = leetCodeProblemCacheId,
+      StartedAt = DateTime.UtcNow,
+      Status = AttemptStatus.InProgress
+    };
+
+    attempt.AddDomainEvent(new AttemptStartedEvent(attempt.Id, userId, leetCodeProblemCacheId));
+    return attempt;
+  }
+
+  /// <summary>
+  /// Submits the cold start thinking phase with multiple hypothesis support.
   /// </summary>
   public Result SubmitColdStart(
       string identifiedSignals,
       Guid chosenPatternId,
+      Guid? secondaryPatternId,
+      string? primaryVsSecondaryReason,
       Guid? rejectedPatternId,
       string? rejectionReason,
-      ConfidenceLevel confidence,
-      int thinkingDurationSeconds)
+      ConfidenceLevel? confidence,
+      int thinkingDurationSeconds,
+      int minimumDurationSeconds = 30)
   {
     if (Status != AttemptStatus.InProgress)
       return Result.Failure(AttemptErrors.InvalidStatusTransition);
 
-    if (thinkingDurationSeconds < 90)
-      return Result.Failure(AttemptErrors.ColdStartTooShort);
+    // Note: Minimum duration is now adaptive (30s → 90s → 180s based on performance)
+    // The frontend calculates and enforces the timer, backend validates minimum
 
     ColdStartSubmission = ColdStartSubmission.Create(
         Id,
         identifiedSignals,
         chosenPatternId,
+        secondaryPatternId,
+        primaryVsSecondaryReason,
         rejectedPatternId,
         rejectionReason,
-        thinkingDurationSeconds);
+        thinkingDurationSeconds,
+        minimumDurationSeconds);
 
     ChosenPatternId = chosenPatternId;
-    Confidence = confidence;
+    if (confidence.HasValue)
+    {
+      Confidence = confidence.Value;
+    }
     Status = AttemptStatus.ColdStartCompleted;
     UpdatedAt = DateTime.UtcNow;
 
-    AddDomainEvent(new ColdStartCompletedEvent(Id, chosenPatternId, confidence));
+    AddDomainEvent(new ColdStartCompletedEvent(Id, chosenPatternId, Confidence));
     return Result.Success();
   }
 
   /// <summary>
   /// Marks the attempt as solved.
   /// </summary>
-  public Result Complete(bool isPatternCorrect)
+  public Result Complete(bool isPatternCorrect, int? confidenceLevel = null)
   {
     if (Status != AttemptStatus.ColdStartCompleted)
       return Result.Failure(AttemptErrors.ColdStartRequired);
 
     IsPatternCorrect = isPatternCorrect;
+
+    // Set confidence from the complete request if provided
+    if (confidenceLevel.HasValue && confidenceLevel.Value >= 1 && confidenceLevel.Value <= 5)
+    {
+      Confidence = (ConfidenceLevel)confidenceLevel.Value;
+    }
+
     Status = AttemptStatus.Solved;
     CompletedAt = DateTime.UtcNow;
     TotalTimeSeconds = (int)(CompletedAt.Value - StartedAt).TotalSeconds;
@@ -180,6 +240,27 @@ public class Attempt : Entity
     UpdatedAt = DateTime.UtcNow;
 
     return Result.Success();
+  }
+
+  /// <summary>
+  /// Sets the chosen pattern name (for LeetCode flow with string-based patterns).
+  /// </summary>
+  public void SetChosenPattern(string patternName)
+  {
+    if (string.IsNullOrWhiteSpace(patternName))
+      throw new ArgumentException("Pattern name is required.", nameof(patternName));
+
+    ChosenPatternName = patternName;
+    UpdatedAt = DateTime.UtcNow;
+  }
+
+  /// <summary>
+  /// Sets whether the pattern choice was correct.
+  /// </summary>
+  public void SetPatternCorrectness(bool isCorrect)
+  {
+    IsPatternCorrect = isCorrect;
+    UpdatedAt = DateTime.UtcNow;
   }
 }
 
