@@ -20,6 +20,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   public DbSet<WrongApproach> WrongApproaches => Set<WrongApproach>();
   public DbSet<Attempt> Attempts => Set<Attempt>();
   public DbSet<ColdStartSubmission> ColdStartSubmissions => Set<ColdStartSubmission>();
+  public DbSet<LeetCodeProblemCache> LeetCodeProblemCache => Set<LeetCodeProblemCache>();
+  public DbSet<ProblemAnalysis> ProblemAnalyses => Set<ProblemAnalysis>();
+  public DbSet<Reflection> Reflections => Set<Reflection>();
+  public DbSet<DataStructure> DataStructures => Set<DataStructure>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
