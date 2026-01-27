@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PatternBlindness.Api.Endpoints;
@@ -7,6 +8,12 @@ using PatternBlindness.Infrastructure.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
+
+// Configure JSON serialization to use string enums
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 // Database & Infrastructure
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -26,7 +33,12 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // For now, AdminOnly policy just requires authentication
+    // In production, you'd check for admin role/claim
+    options.AddPolicy("AdminOnly", policy => policy.RequireAuthenticatedUser());
+});
 
 // OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -82,8 +94,10 @@ app.MapHealthChecks("/health");
 // Map API endpoints
 app.MapAuthEndpoints();
 app.MapPatternEndpoints();
+app.MapDataStructureEndpoints();
 app.MapProblemEndpoints();
 app.MapAttemptEndpoints();
+app.MapLeetCodeEndpoints();
 
 // Root redirect to Swagger
 app.MapGet("/", () => Results.Redirect("/swagger"));

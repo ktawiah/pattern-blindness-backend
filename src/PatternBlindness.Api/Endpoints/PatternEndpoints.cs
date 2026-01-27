@@ -39,14 +39,7 @@ public static class PatternEndpoints
   {
     var patterns = await patternRepository.GetAllAsync(ct);
 
-    var responses = patterns.Select(p => new PatternResponse(
-        p.Id,
-        p.Name,
-        p.Description,
-        p.Category,
-        ParseJsonArray(p.TriggerSignals),
-        ParseJsonArray(p.CommonMistakes)))
-        .ToList();
+    var responses = patterns.Select(MapToResponse).ToList();
 
     return TypedResults.Ok<IReadOnlyList<PatternResponse>>(responses);
   }
@@ -61,15 +54,7 @@ public static class PatternEndpoints
     if (pattern is null)
       return TypedResults.NotFound();
 
-    var response = new PatternResponse(
-        pattern.Id,
-        pattern.Name,
-        pattern.Description,
-        pattern.Category,
-        ParseJsonArray(pattern.TriggerSignals),
-        ParseJsonArray(pattern.CommonMistakes));
-
-    return TypedResults.Ok(response);
+    return TypedResults.Ok(MapToResponse(pattern));
   }
 
   private static async Task<Ok<IReadOnlyList<PatternBriefResponse>>> GetPatternsByCategory(
@@ -88,11 +73,58 @@ public static class PatternEndpoints
     return TypedResults.Ok<IReadOnlyList<PatternBriefResponse>>(responses);
   }
 
+  private static PatternResponse MapToResponse(Domain.Entities.Pattern pattern)
+  {
+    return new PatternResponse(
+        pattern.Id,
+        pattern.Name,
+        pattern.Description,
+        pattern.Category,
+        pattern.WhatItIs,
+        pattern.WhenToUse,
+        pattern.WhyItWorks,
+        ParseJsonArray(pattern.CommonUseCases),
+        pattern.TimeComplexity,
+        pattern.SpaceComplexity,
+        pattern.PseudoCode,
+        ParseJsonArray(pattern.TriggerSignals),
+        ParseJsonArray(pattern.CommonMistakes),
+        ParseResourceLinks(pattern.Resources),
+        ParseGuidArray(pattern.RelatedPatternIds));
+  }
+
   private static string[] ParseJsonArray(string json)
   {
     try
     {
       return JsonSerializer.Deserialize<string[]>(json) ?? [];
+    }
+    catch
+    {
+      return [];
+    }
+  }
+
+  private static ResourceLink[] ParseResourceLinks(string json)
+  {
+    try
+    {
+      return JsonSerializer.Deserialize<ResourceLink[]>(json, new JsonSerializerOptions
+      {
+        PropertyNameCaseInsensitive = true
+      }) ?? [];
+    }
+    catch
+    {
+      return [];
+    }
+  }
+
+  private static Guid[] ParseGuidArray(string json)
+  {
+    try
+    {
+      return JsonSerializer.Deserialize<Guid[]>(json) ?? [];
     }
     catch
     {
