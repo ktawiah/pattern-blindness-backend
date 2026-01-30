@@ -574,9 +574,21 @@ public static class AttemptEndpoints
 
     await analysisRepository.AddReflectionAsync(reflection, ct);
 
-    // Update attempt with chosen pattern
+    // Update attempt with chosen pattern and complete it
     attempt.SetChosenPattern(request.ChosenPattern);
-    attempt.SetPatternCorrectness(reflectionResult.IsCorrectPattern);
+
+    // Convert confidence from 0-100 scale to 1-5 scale
+    int? confidenceLevel = request.ConfidenceLevel switch
+    {
+      <= 20 => 1,
+      <= 40 => 2,
+      <= 60 => 3,
+      <= 80 => 4,
+      _ => 5
+    };
+
+    // Complete the LeetCode attempt so it counts in dashboard analytics
+    attempt.CompleteLeetCodeAttempt(reflectionResult.IsCorrectPattern, confidenceLevel);
     await attemptRepository.UpdateAsync(attempt, ct);
 
     return TypedResults.Ok(MapToReflectionResponse(reflection));

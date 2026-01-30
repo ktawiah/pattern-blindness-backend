@@ -330,6 +330,39 @@ public class Attempt : Entity
     IsPatternCorrect = isCorrect;
     UpdatedAt = DateTime.UtcNow;
   }
+
+  /// <summary>
+  /// Completes a LeetCode-based attempt after reflection is generated.
+  /// LeetCode attempts don't go through cold start, so this completes from InProgress status.
+  /// </summary>
+  public Result CompleteLeetCodeAttempt(
+      bool isPatternCorrect,
+      int? confidenceLevel = null,
+      ApproachOutcome? outcome = null)
+  {
+    // LeetCode attempts can be completed from InProgress (no cold start) or ColdStartCompleted
+    if (Status != AttemptStatus.InProgress && Status != AttemptStatus.ColdStartCompleted)
+      return Result.Failure(AttemptErrors.AlreadyCompleted);
+
+    // Must be a LeetCode attempt
+    if (!LeetCodeProblemCacheId.HasValue)
+      return Result.Failure(new Error("Attempt.NotLeetCodeAttempt", "This method is only for LeetCode-based attempts"));
+
+    IsPatternCorrect = isPatternCorrect;
+    Outcome = outcome ?? (isPatternCorrect ? ApproachOutcome.Worked : ApproachOutcome.Failed);
+
+    if (confidenceLevel.HasValue && confidenceLevel.Value >= 1 && confidenceLevel.Value <= 5)
+    {
+      Confidence = (ConfidenceLevel)confidenceLevel.Value;
+    }
+
+    Status = AttemptStatus.Solved;
+    CompletedAt = DateTime.UtcNow;
+    TotalTimeSeconds = (int)(CompletedAt.Value - StartedAt).TotalSeconds;
+    UpdatedAt = DateTime.UtcNow;
+
+    return Result.Success();
+  }
 }
 
 /// <summary>

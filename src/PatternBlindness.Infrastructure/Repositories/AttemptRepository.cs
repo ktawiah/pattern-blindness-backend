@@ -50,6 +50,7 @@ public class AttemptRepository : IAttemptRepository
         .AsNoTracking()
         .Where(a => a.UserId == userId)
         .Include(a => a.Problem)
+        .Include(a => a.LeetCodeProblem)
         .Include(a => a.ChosenPattern)
         .OrderByDescending(a => a.StartedAt)
         .ToListAsync(ct);

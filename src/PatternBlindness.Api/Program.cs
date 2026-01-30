@@ -1,6 +1,9 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using AspNet.Security.OAuth.GitHub;
 using PatternBlindness.Api.Endpoints;
 using PatternBlindness.Infrastructure;
 using PatternBlindness.Infrastructure.Data;
