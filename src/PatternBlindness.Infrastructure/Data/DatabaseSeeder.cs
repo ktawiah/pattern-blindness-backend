@@ -16,11 +16,7 @@ public static class DatabaseSeeder
     {
         // Always update patterns to ensure they have comprehensive data
         await SeedPatternsAsync(context);
-
-        if (!await context.DataStructures.AnyAsync())
-        {
-            await SeedDataStructuresAsync(context);
-        }
+        await SeedDataStructuresAsync(context);
     }
 
     private static async Task SeedPatternsAsync(ApplicationDbContext context)
@@ -63,7 +59,33 @@ public static class DatabaseSeeder
     private static async Task SeedDataStructuresAsync(ApplicationDbContext context)
     {
         var dataStructures = CreateDataStructures();
-        await context.DataStructures.AddRangeAsync(dataStructures);
+
+        foreach (var newDs in dataStructures)
+        {
+            var existingDs = await context.DataStructures
+                .FirstOrDefaultAsync(ds => ds.Name == newDs.Name);
+
+            if (existingDs == null)
+            {
+                await context.DataStructures.AddAsync(newDs);
+            }
+            else
+            {
+                existingDs.Update(
+                    name: newDs.Name,
+                    description: newDs.Description,
+                    whatItIs: newDs.WhatItIs,
+                    operations: newDs.Operations,
+                    whenToUse: newDs.WhenToUse,
+                    tradeoffs: newDs.Tradeoffs,
+                    commonUseCases: newDs.CommonUseCases,
+                    implementation: newDs.Implementation,
+                    resources: newDs.Resources,
+                    relatedStructureIds: newDs.RelatedStructureIds
+                );
+            }
+        }
+
         await context.SaveChangesAsync();
     }
 
@@ -630,18 +652,699 @@ Key technique: Sort by start (or end) time, then process linearly.",
                 pseudoCode: @"def merge_intervals(intervals):
     intervals.sort(key=lambda x: x[0])
     result = [intervals[0]]
-    
+
     for start, end in intervals[1:]:
         if start <= result[-1][1]:  # Overlaps
             result[-1][1] = max(result[-1][1], end)
         else:
             result.append([start, end])
-    
+
     return result",
                 triggerSignals: ToJson(new[] { "Time ranges", "Overlapping intervals", "Merge ranges", "Meeting scheduling", "Booking conflicts", "Minimum operations on ranges" }),
                 commonMistakes: ToJson(new[] { "Wrong sort key", "Not handling touching intervals correctly", "Off-by-one with inclusive/exclusive bounds", "Not merging all overlaps" }),
                 resources: ToJson(new object[] {
                     new { title = "Intervals - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/12", type = "course" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Divide and Conquer Pattern
+            Pattern.Create(
+                name: "Divide and Conquer",
+                description: "Break problem into smaller subproblems, solve recursively, and combine results.",
+                category: PatternCategory.DivideAndConquer,
+                whatItIs: @"Divide and Conquer is a paradigm that breaks a problem into smaller independent subproblems, solves them recursively, and combines the results. Unlike DP, subproblems don't overlap.
+
+Three steps:
+1. Divide: Split into smaller subproblems
+2. Conquer: Solve subproblems recursively
+3. Combine: Merge subproblem solutions",
+                whenToUse: @"Use Divide and Conquer when:
+- Problem can be broken into independent subproblems
+- Subproblems are similar to the original problem
+- Solutions can be combined efficiently
+- Classic examples: sorting, searching, matrix multiplication",
+                whyItWorks: @"Divide and Conquer works because:
+1. Smaller problems are easier to solve
+2. Recursion naturally handles the division
+3. Combining is often O(n) leading to O(n log n) total
+4. Can be parallelized since subproblems are independent",
+                commonUseCases: ToJson(new[] { "Merge Sort", "Quick Sort", "Binary Search", "Maximum subarray (Kadane)", "Closest pair of points", "Strassen's matrix multiplication", "Karatsuba multiplication" }),
+                timeComplexity: "Varies: O(n log n) for sorting, O(log n) for search",
+                spaceComplexity: "O(log n) to O(n) for recursion stack",
+                pseudoCode: @"def divide_and_conquer(problem):
+    # Base case
+    if is_base_case(problem):
+        return solve_directly(problem)
+
+    # Divide
+    subproblems = divide(problem)
+
+    # Conquer
+    subsolutions = [divide_and_conquer(sub) for sub in subproblems]
+
+    # Combine
+    return combine(subsolutions)
+
+# Merge Sort example
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)",
+                triggerSignals: ToJson(new[] { "Problem can be halved", "Subproblems are independent", "Sorting algorithms", "Matrix operations", "Geometric algorithms" }),
+                commonMistakes: ToJson(new[] { "Wrong base case", "Inefficient combine step", "Not handling odd/even splits", "Stack overflow on deep recursion", "Using when DP is needed (overlapping subproblems)" }),
+                resources: ToJson(new object[] {
+                    new { title = "Divide and Conquer - Khan Academy", url = "https://www.khanacademy.org/computing/computer-science/algorithms/merge-sort/a/divide-and-conquer-algorithms", type = "article" },
+                    new { title = "Divide and Conquer - GeeksforGeeks", url = "https://www.geeksforgeeks.org/divide-and-conquer/", type = "article" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Topological Sort Pattern
+            Pattern.Create(
+                name: "Topological Sort",
+                description: "Linear ordering of vertices in a DAG where every directed edge u→v has u before v.",
+                category: PatternCategory.Graph,
+                whatItIs: @"Topological Sort produces a linear ordering of vertices in a Directed Acyclic Graph (DAG) such that for every edge (u, v), vertex u comes before v. Two approaches:
+1. Kahn's Algorithm (BFS with indegree)
+2. DFS with post-order reversal
+
+Only possible for DAGs - existence of topological order proves no cycles.",
+                whenToUse: @"Use Topological Sort when:
+- Processing dependencies in order
+- Build systems (compile order)
+- Course prerequisites
+- Task scheduling with dependencies
+- Detecting cycles in directed graphs",
+                whyItWorks: @"Topological Sort works because:
+1. In a DAG, there's always a vertex with no incoming edges
+2. Removing it and repeating gives valid ordering
+3. DFS post-order naturally respects dependencies",
+                commonUseCases: ToJson(new[] { "Course Schedule", "Alien Dictionary", "Build order", "Task scheduling", "Recipe steps", "Package dependencies" }),
+                timeComplexity: "O(V + E)",
+                spaceComplexity: "O(V) for result and auxiliary structures",
+                pseudoCode: @"# Kahn's Algorithm (BFS)
+def topological_sort(graph, num_nodes):
+    indegree = [0] * num_nodes
+    for u in graph:
+        for v in graph[u]:
+            indegree[v] += 1
+
+    queue = deque([i for i in range(num_nodes) if indegree[i] == 0])
+    result = []
+
+    while queue:
+        node = queue.popleft()
+        result.append(node)
+        for neighbor in graph[node]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+
+    return result if len(result) == num_nodes else []  # Empty if cycle",
+                triggerSignals: ToJson(new[] { "Dependencies/prerequisites", "Build order", "Course schedule", "DAG processing", "Cycle detection directed graph" }),
+                commonMistakes: ToJson(new[] { "Forgetting to check for cycles", "Wrong indegree calculation", "Not handling disconnected components", "Confusing with DFS/BFS traversal" }),
+                resources: ToJson(new object[] {
+                    new { title = "Topological Sort - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/14", type = "course" },
+                    new { title = "Kahn's Algorithm", url = "https://www.geeksforgeeks.org/topological-sorting-indegree-based-solution/", type = "article" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Bit Manipulation Pattern
+            Pattern.Create(
+                name: "Bit Manipulation",
+                description: "Use bitwise operations to solve problems efficiently with constant space.",
+                category: PatternCategory.BitManipulation,
+                whatItIs: @"Bit manipulation uses bitwise operators (AND, OR, XOR, NOT, shifts) to solve problems at the bit level. Key operations:
+- x & (x-1): Clear lowest set bit
+- x & (-x): Get lowest set bit
+- x ^ x = 0: XOR of same numbers is 0
+- x ^ 0 = x: XOR with 0 preserves value
+
+Enables O(1) space solutions for certain problems.",
+                whenToUse: @"Use Bit Manipulation when:
+- Finding single/unique numbers
+- Power of 2 checks
+- Counting bits
+- Generating subsets
+- Space optimization (bit vectors)",
+                whyItWorks: @"Bit Manipulation works because:
+1. XOR has properties: x^x=0, x^0=x, associative
+2. Numbers can encode multiple boolean states
+3. Bitwise operations are O(1) CPU operations
+4. Bits can represent sets efficiently",
+                commonUseCases: ToJson(new[] { "Single Number", "Number of 1 Bits", "Power of Two", "Counting Bits", "Subsets generation", "Missing Number", "Reverse Bits" }),
+                timeComplexity: "O(1) to O(n) depending on problem",
+                spaceComplexity: "Often O(1)",
+                pseudoCode: @"# Common bit operations
+n & (n - 1)      # Clear lowest set bit
+n & (-n)         # Isolate lowest set bit
+n | (1 << i)     # Set bit at position i
+n & ~(1 << i)    # Clear bit at position i
+(n >> i) & 1     # Check bit at position i
+
+# Single Number (XOR all elements)
+def single_number(nums):
+    result = 0
+    for num in nums:
+        result ^= num
+    return result
+
+# Count set bits
+def count_bits(n):
+    count = 0
+    while n:
+        n &= (n - 1)  # Clear lowest set bit
+        count += 1
+    return count",
+                triggerSignals: ToJson(new[] { "Find unique/single number", "Power of 2", "Binary representation", "Subsets/combinations", "O(1) space requirement", "Toggle states" }),
+                commonMistakes: ToJson(new[] { "Sign bit issues with negative numbers", "Wrong shift direction", "Overflow in bit shifts", "Not handling zero case" }),
+                resources: ToJson(new object[] {
+                    new { title = "Bit Manipulation - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/15", type = "course" },
+                    new { title = "Bit Manipulation Tutorial", url = "https://leetcode.com/discuss/general-discussion/1073221/all-about-bitwise-operations-beginner-intermediate", type = "article" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Prefix Sum Pattern
+            Pattern.Create(
+                name: "Prefix Sum",
+                description: "Precompute cumulative sums to answer range sum queries in O(1).",
+                category: PatternCategory.PrefixSum,
+                whatItIs: @"Prefix Sum creates an array where each element is the sum of all previous elements plus itself. This allows O(1) range sum queries:
+- prefix[j] - prefix[i-1] = sum(arr[i:j+1])
+
+Can be extended to 2D (prefix sum matrix) and other operations (product, XOR).",
+                whenToUse: @"Use Prefix Sum when:
+- Multiple range sum queries
+- Finding subarrays with target sum
+- Cumulative statistics needed
+- Range operations on arrays
+- 2D matrix region queries",
+                whyItWorks: @"Prefix Sum works because:
+1. Precomputation amortizes over many queries
+2. Range sum = difference of two prefix sums
+3. Avoids O(n) computation per query",
+                commonUseCases: ToJson(new[] { "Range Sum Query", "Subarray Sum Equals K", "Contiguous Array", "Product of Array Except Self", "2D Range Sum", "Running sum" }),
+                timeComplexity: "O(n) precompute, O(1) query",
+                spaceComplexity: "O(n) for prefix array",
+                pseudoCode: @"# Build prefix sum
+def build_prefix(arr):
+    prefix = [0] * (len(arr) + 1)
+    for i in range(len(arr)):
+        prefix[i + 1] = prefix[i] + arr[i]
+    return prefix
+
+# Range sum query [i, j] inclusive
+def range_sum(prefix, i, j):
+    return prefix[j + 1] - prefix[i]
+
+# Subarray sum equals k
+def subarray_sum(nums, k):
+    count = 0
+    prefix_sum = 0
+    seen = {0: 1}
+
+    for num in nums:
+        prefix_sum += num
+        if prefix_sum - k in seen:
+            count += seen[prefix_sum - k]
+        seen[prefix_sum] = seen.get(prefix_sum, 0) + 1
+
+    return count",
+                triggerSignals: ToJson(new[] { "Range sum queries", "Subarray with target sum", "Cumulative operations", "Multiple queries on same array", "2D matrix region sums" }),
+                commonMistakes: ToJson(new[] { "Off-by-one in prefix indexing", "Not handling empty ranges", "Integer overflow with large sums", "Forgetting prefix[0] = 0" }),
+                resources: ToJson(new object[] {
+                    new { title = "Prefix Sum - LeetCode", url = "https://leetcode.com/problems/range-sum-query-immutable/", type = "problem" },
+                    new { title = "Prefix Sum Tutorial", url = "https://www.geeksforgeeks.org/prefix-sum-array-implementation-applications-competitive-programming/", type = "article" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Fast and Slow Pointers Pattern
+            Pattern.Create(
+                name: "Fast and Slow Pointers (Floyd's)",
+                description: "Use two pointers moving at different speeds to detect cycles and find middle elements.",
+                category: PatternCategory.TwoPointers,
+                whatItIs: @"Fast and Slow Pointers (Floyd's Tortoise and Hare) uses two pointers moving at different speeds:
+- Slow pointer moves 1 step
+- Fast pointer moves 2 steps
+
+If there's a cycle, they'll meet. Also useful for finding middle of linked list in one pass.",
+                whenToUse: @"Use Fast/Slow Pointers when:
+- Detecting cycles in linked lists
+- Finding middle of linked list
+- Finding start of cycle
+- Happy number problem
+- Detecting loops in sequences",
+                whyItWorks: @"Fast/Slow Pointers works because:
+1. In a cycle, fast catches up to slow by 1 step each iteration
+2. They meet within the cycle's length iterations
+3. Mathematical property: meeting point relates to cycle start",
+                commonUseCases: ToJson(new[] { "Linked List Cycle", "Linked List Cycle II", "Find Middle of List", "Happy Number", "Find Duplicate Number", "Palindrome Linked List" }),
+                timeComplexity: "O(n)",
+                spaceComplexity: "O(1)",
+                pseudoCode: @"# Detect cycle
+def has_cycle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            return True
+    return False
+
+# Find cycle start
+def detect_cycle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            # Find cycle start
+            slow = head
+            while slow != fast:
+                slow = slow.next
+                fast = fast.next
+            return slow
+    return None
+
+# Find middle
+def find_middle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+    return slow",
+                triggerSignals: ToJson(new[] { "Cycle detection", "Find middle element", "Linked list loop", "Sequence repeats", "O(1) space with linked list" }),
+                commonMistakes: ToJson(new[] { "Not checking fast.next before fast.next.next", "Wrong initialization", "Not handling empty list", "Confusing cycle detection with finding cycle start" }),
+                resources: ToJson(new object[] {
+                    new { title = "Floyd's Algorithm", url = "https://www.geeksforgeeks.org/floyds-cycle-finding-algorithm/", type = "article" },
+                    new { title = "Linked List Cycle - LeetCode", url = "https://leetcode.com/problems/linked-list-cycle/", type = "problem" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Matrix Traversal Pattern
+            Pattern.Create(
+                name: "Matrix Traversal",
+                description: "Techniques for traversing 2D grids: DFS, BFS, spiral, diagonal patterns.",
+                category: PatternCategory.Matrix,
+                whatItIs: @"Matrix Traversal covers techniques for navigating 2D arrays:
+- 4-directional: up, down, left, right
+- 8-directional: including diagonals
+- Spiral order: outer to inner
+- Diagonal traversal
+
+Key: direction arrays simplify code.",
+                whenToUse: @"Use Matrix Traversal when:
+- Grid-based pathfinding
+- Image processing (flood fill)
+- Game boards
+- Finding connected regions
+- Spiral/diagonal output",
+                whyItWorks: @"Matrix Traversal works because:
+1. Direction arrays standardize movement
+2. BFS finds shortest path in unweighted grids
+3. DFS explores all connected cells
+4. Boundary checks prevent index errors",
+                commonUseCases: ToJson(new[] { "Number of Islands", "Flood Fill", "Rotting Oranges", "Word Search", "Spiral Matrix", "Diagonal Traverse", "Shortest Path in Grid" }),
+                timeComplexity: "O(m × n) to visit all cells",
+                spaceComplexity: "O(m × n) for visited array or O(min(m,n)) for BFS queue",
+                pseudoCode: @"# Direction arrays
+directions_4 = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+directions_8 = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
+
+# BFS on grid
+def bfs_grid(grid, start):
+    rows, cols = len(grid), len(grid[0])
+    queue = deque([start])
+    visited = {start}
+
+    while queue:
+        r, c = queue.popleft()
+        for dr, dc in directions_4:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                if (nr, nc) not in visited and grid[nr][nc] == valid:
+                    visited.add((nr, nc))
+                    queue.append((nr, nc))
+
+# Spiral traversal
+def spiral_order(matrix):
+    result = []
+    top, bottom = 0, len(matrix) - 1
+    left, right = 0, len(matrix[0]) - 1
+
+    while top <= bottom and left <= right:
+        # Traverse right, down, left, up
+        # Adjust boundaries after each direction
+    return result",
+                triggerSignals: ToJson(new[] { "2D grid/matrix", "Find connected regions", "Shortest path in grid", "Flood fill", "Spiral/diagonal pattern", "Island problems" }),
+                commonMistakes: ToJson(new[] { "Index out of bounds", "Not marking visited before enqueueing", "Wrong boundary conditions", "Modifying grid while iterating" }),
+                resources: ToJson(new object[] {
+                    new { title = "Matrix Traversal Patterns", url = "https://leetcode.com/discuss/general-discussion/657507/", type = "article" },
+                    new { title = "Number of Islands", url = "https://leetcode.com/problems/number-of-islands/", type = "problem" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Top K Elements Pattern
+            Pattern.Create(
+                name: "Top K Elements",
+                description: "Find k largest, smallest, or most frequent elements using heaps or quickselect.",
+                category: PatternCategory.Heap,
+                whatItIs: @"Top K Elements finds the k largest, smallest, or most frequent elements. Main approaches:
+1. Heap of size k: O(n log k)
+2. QuickSelect: O(n) average
+3. Bucket sort for frequency: O(n)
+
+Use min-heap for k largest, max-heap for k smallest.",
+                whenToUse: @"Use Top K when:
+- Finding k largest/smallest elements
+- Finding k most/least frequent
+- K closest points
+- Need partial sorting only",
+                whyItWorks: @"Top K works because:
+1. Heap maintains only k elements, reducing log factor
+2. QuickSelect partitions around kth element
+3. Don't need full sort - only position relative to k matters",
+                commonUseCases: ToJson(new[] { "Kth Largest Element", "Top K Frequent Elements", "K Closest Points", "Find K Pairs with Smallest Sums", "Kth Largest in Stream" }),
+                timeComplexity: "O(n log k) with heap, O(n) with quickselect",
+                spaceComplexity: "O(k)",
+                pseudoCode: @"import heapq
+
+# K largest using min-heap of size k
+def k_largest(nums, k):
+    heap = []
+    for num in nums:
+        heapq.heappush(heap, num)
+        if len(heap) > k:
+            heapq.heappop(heap)
+    return heap
+
+# Top K frequent
+def top_k_frequent(nums, k):
+    count = Counter(nums)
+    return heapq.nlargest(k, count.keys(), key=count.get)
+
+# QuickSelect for kth largest
+def quick_select(nums, k):
+    k = len(nums) - k  # Convert to index
+    def select(l, r):
+        pivot = nums[r]
+        p = l
+        for i in range(l, r):
+            if nums[i] <= pivot:
+                nums[p], nums[i] = nums[i], nums[p]
+                p += 1
+        nums[p], nums[r] = nums[r], nums[p]
+        if p == k:
+            return nums[p]
+        elif p < k:
+            return select(p + 1, r)
+        else:
+            return select(l, p - 1)
+    return select(0, len(nums) - 1)",
+                triggerSignals: ToJson(new[] { "K largest/smallest", "K most frequent", "K closest", "Partial sorting", "Stream of elements" }),
+                commonMistakes: ToJson(new[] { "Using wrong heap type (min vs max)", "Sorting when k << n", "Not handling k > n", "QuickSelect worst case O(n²)" }),
+                resources: ToJson(new object[] {
+                    new { title = "Top K Elements - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/16", type = "course" },
+                    new { title = "Kth Largest Element", url = "https://leetcode.com/problems/kth-largest-element-in-an-array/", type = "problem" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // K-way Merge Pattern
+            Pattern.Create(
+                name: "K-way Merge",
+                description: "Merge K sorted arrays or lists efficiently using a min-heap.",
+                category: PatternCategory.Heap,
+                whatItIs: @"K-way Merge efficiently combines K sorted sequences into one sorted output. Uses a min-heap to always get the smallest current element across all lists. Each list contributes one element to the heap at a time.",
+                whenToUse: @"Use K-way Merge when:
+- Merging k sorted arrays/lists
+- External sorting (merge sorted chunks)
+- Finding smallest range covering elements from k lists
+- K sorted streams",
+                whyItWorks: @"K-way Merge works because:
+1. Heap maintains k elements (one from each list)
+2. Pop gives global minimum
+3. Push replacement maintains invariant
+4. Total n elements × log k heap operations",
+                commonUseCases: ToJson(new[] { "Merge K Sorted Lists", "Smallest Range Covering Elements", "Kth Smallest in Sorted Matrix", "Find K Pairs with Smallest Sums", "External sort merge phase" }),
+                timeComplexity: "O(n log k) where n = total elements, k = number of lists",
+                spaceComplexity: "O(k) for heap",
+                pseudoCode: @"import heapq
+
+def merge_k_sorted_lists(lists):
+    heap = []
+
+    # Initialize with first element from each list
+    for i, lst in enumerate(lists):
+        if lst:
+            heapq.heappush(heap, (lst[0].val, i, lst[0]))
+
+    dummy = ListNode()
+    current = dummy
+
+    while heap:
+        val, i, node = heapq.heappop(heap)
+        current.next = node
+        current = current.next
+
+        if node.next:
+            heapq.heappush(heap, (node.next.val, i, node.next))
+
+    return dummy.next
+
+# For arrays
+def merge_k_sorted_arrays(arrays):
+    heap = [(arr[0], i, 0) for i, arr in enumerate(arrays) if arr]
+    heapq.heapify(heap)
+    result = []
+
+    while heap:
+        val, arr_idx, elem_idx = heapq.heappop(heap)
+        result.append(val)
+        if elem_idx + 1 < len(arrays[arr_idx]):
+            heapq.heappush(heap, (arrays[arr_idx][elem_idx + 1], arr_idx, elem_idx + 1))
+
+    return result",
+                triggerSignals: ToJson(new[] { "Merge k sorted", "Multiple sorted streams", "External sorting", "Smallest from k lists", "Global order from local orders" }),
+                commonMistakes: ToJson(new[] { "Not tracking list index in heap", "Comparing nodes directly (need val)", "Not handling empty lists", "Forgetting to check for next element" }),
+                resources: ToJson(new object[] {
+                    new { title = "Merge K Sorted Lists", url = "https://leetcode.com/problems/merge-k-sorted-lists/", type = "problem" },
+                    new { title = "K-way Merge Pattern", url = "https://www.educative.io/courses/grokking-the-coding-interview/Y5n0n3vAgYK", type = "course" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Shortest Path Pattern
+            Pattern.Create(
+                name: "Shortest Path Algorithms",
+                description: "Find shortest paths in weighted graphs: Dijkstra, Bellman-Ford, Floyd-Warshall.",
+                category: PatternCategory.Graph,
+                whatItIs: @"Shortest Path algorithms find minimum-cost paths in weighted graphs:
+- Dijkstra: Single source, non-negative weights, O((V+E)log V)
+- Bellman-Ford: Single source, handles negative weights, O(VE)
+- Floyd-Warshall: All pairs, O(V³)
+
+Choice depends on graph properties and query needs.",
+                whenToUse: @"Use Dijkstra when:
+- Non-negative edge weights
+- Single source shortest paths
+- Need efficient O((V+E)log V)
+
+Use Bellman-Ford when:
+- Negative edge weights possible
+- Need to detect negative cycles
+
+Use Floyd-Warshall when:
+- Need all pairs shortest paths
+- Dense graph (E ≈ V²)",
+                whyItWorks: @"These algorithms work because:
+1. Dijkstra: Greedy selection of minimum distance vertex is safe with non-negative weights
+2. Bellman-Ford: V-1 iterations relax all edges, enough for any shortest path
+3. Floyd-Warshall: Dynamic programming on intermediate vertices",
+                commonUseCases: ToJson(new[] { "Network Delay Time", "Cheapest Flights Within K Stops", "Path with Minimum Effort", "Swim in Rising Water", "All pairs shortest paths" }),
+                timeComplexity: "Dijkstra: O((V+E)log V), Bellman-Ford: O(VE), Floyd-Warshall: O(V³)",
+                spaceComplexity: "O(V) for Dijkstra/Bellman-Ford, O(V²) for Floyd-Warshall",
+                pseudoCode: @"# Dijkstra's Algorithm
+def dijkstra(graph, start):
+    dist = {node: float('inf') for node in graph}
+    dist[start] = 0
+    heap = [(0, start)]
+
+    while heap:
+        d, u = heapq.heappop(heap)
+        if d > dist[u]:
+            continue
+        for v, weight in graph[u]:
+            if dist[u] + weight < dist[v]:
+                dist[v] = dist[u] + weight
+                heapq.heappush(heap, (dist[v], v))
+
+    return dist
+
+# Bellman-Ford
+def bellman_ford(edges, n, start):
+    dist = [float('inf')] * n
+    dist[start] = 0
+
+    for _ in range(n - 1):
+        for u, v, w in edges:
+            if dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+
+    # Check negative cycle
+    for u, v, w in edges:
+        if dist[u] + w < dist[v]:
+            return None  # Negative cycle
+    return dist",
+                triggerSignals: ToJson(new[] { "Weighted graph", "Minimum cost path", "Network delay/latency", "Travel cost optimization", "Negative weights possible" }),
+                commonMistakes: ToJson(new[] { "Using Dijkstra with negative weights", "Not detecting negative cycles", "Wrong priority queue usage", "Not handling disconnected nodes" }),
+                resources: ToJson(new object[] {
+                    new { title = "Dijkstra's Algorithm - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/17", type = "course" },
+                    new { title = "Bellman-Ford Algorithm", url = "https://www.geeksforgeeks.org/bellman-ford-algorithm-dp-23/", type = "article" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Minimum Spanning Tree Pattern
+            Pattern.Create(
+                name: "Minimum Spanning Tree",
+                description: "Find tree connecting all vertices with minimum total edge weight: Kruskal's and Prim's algorithms.",
+                category: PatternCategory.Graph,
+                whatItIs: @"A Minimum Spanning Tree (MST) connects all vertices in an undirected weighted graph with minimum total edge weight. Two classic algorithms:
+- Kruskal's: Sort edges, add if no cycle (uses Union-Find)
+- Prim's: Grow tree from start vertex (uses heap)
+
+Both produce optimal MST with V-1 edges.",
+                whenToUse: @"Use MST when:
+- Connecting all points with minimum cost
+- Network design (cables, roads)
+- Clustering (remove expensive edges)
+- Approximating traveling salesman",
+                whyItWorks: @"MST algorithms work because:
+1. Cut property: lightest edge crossing any cut is in MST
+2. Kruskal's greedily picks smallest safe edge
+3. Prim's greedily expands tree with cheapest edge",
+                commonUseCases: ToJson(new[] { "Min Cost to Connect All Points", "Network cable/road design", "Connecting cities", "Image segmentation", "Cluster analysis" }),
+                timeComplexity: "Kruskal: O(E log E), Prim: O((V+E) log V)",
+                spaceComplexity: "O(V) for Union-Find or heap",
+                pseudoCode: @"# Kruskal's Algorithm
+def kruskal(edges, n):
+    edges.sort(key=lambda x: x[2])  # Sort by weight
+    uf = UnionFind(n)
+    mst_weight = 0
+    mst_edges = []
+
+    for u, v, w in edges:
+        if uf.union(u, v):  # No cycle
+            mst_weight += w
+            mst_edges.append((u, v, w))
+            if len(mst_edges) == n - 1:
+                break
+
+    return mst_weight if len(mst_edges) == n - 1 else -1
+
+# Prim's Algorithm
+def prim(graph, n):
+    visited = [False] * n
+    heap = [(0, 0)]  # (weight, node)
+    mst_weight = 0
+
+    while heap:
+        w, u = heapq.heappop(heap)
+        if visited[u]:
+            continue
+        visited[u] = True
+        mst_weight += w
+
+        for v, weight in graph[u]:
+            if not visited[v]:
+                heapq.heappush(heap, (weight, v))
+
+    return mst_weight",
+                triggerSignals: ToJson(new[] { "Connect all points minimum cost", "Network design", "Spanning tree", "Minimum total weight to connect" }),
+                commonMistakes: ToJson(new[] { "Using on directed graphs", "Not checking if all vertices connected", "Wrong Union-Find usage", "Duplicate edges in heap" }),
+                resources: ToJson(new object[] {
+                    new { title = "MST - Kruskal's", url = "https://www.geeksforgeeks.org/kruskals-minimum-spanning-tree-algorithm-greedy-algo-2/", type = "article" },
+                    new { title = "MST - Prim's", url = "https://www.geeksforgeeks.org/prims-minimum-spanning-tree-mst-greedy-algo-5/", type = "article" }
+                }),
+                relatedPatternIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // String Matching Pattern
+            Pattern.Create(
+                name: "String Matching Algorithms",
+                description: "Efficient algorithms for finding patterns in text: KMP, Rabin-Karp, Z-algorithm.",
+                category: PatternCategory.String,
+                whatItIs: @"String matching algorithms find occurrences of a pattern in text:
+- KMP (Knuth-Morris-Pratt): Uses failure function to avoid re-comparing, O(n+m)
+- Rabin-Karp: Rolling hash for average O(n+m), good for multiple patterns
+- Z-algorithm: Computes Z-array for pattern matching, O(n+m)
+
+All achieve linear time vs naive O(nm).",
+                whenToUse: @"Use KMP when:
+- Single pattern, need guaranteed O(n+m)
+- Pattern has repeating prefixes
+
+Use Rabin-Karp when:
+- Multiple patterns to search
+- Substring matching problems
+
+Use Z-algorithm when:
+- Pattern matching or period finding",
+                whyItWorks: @"These algorithms work because:
+1. KMP: Failure function tells how far to shift without missing matches
+2. Rabin-Karp: Rolling hash updates in O(1), only verify hash matches
+3. Z-array: Precomputed prefix lengths enable O(1) matching decisions",
+                commonUseCases: ToJson(new[] { "Find substring", "Pattern matching", "Repeated substrings", "String period", "Anagram search" }),
+                timeComplexity: "O(n + m) where n = text length, m = pattern length",
+                spaceComplexity: "O(m) for failure/Z array",
+                pseudoCode: @"# KMP Algorithm
+def kmp_search(text, pattern):
+    # Build failure function
+    def build_lps(pattern):
+        lps = [0] * len(pattern)
+        length = 0
+        i = 1
+        while i < len(pattern):
+            if pattern[i] == pattern[length]:
+                length += 1
+                lps[i] = length
+                i += 1
+            elif length > 0:
+                length = lps[length - 1]
+            else:
+                i += 1
+        return lps
+
+    lps = build_lps(pattern)
+    i = j = 0
+
+    while i < len(text):
+        if text[i] == pattern[j]:
+            i += 1
+            j += 1
+            if j == len(pattern):
+                return i - j  # Found
+        elif j > 0:
+            j = lps[j - 1]
+        else:
+            i += 1
+
+    return -1",
+                triggerSignals: ToJson(new[] { "Find pattern in text", "Multiple pattern search", "String period/repetition", "Efficient substring search" }),
+                commonMistakes: ToJson(new[] { "Wrong LPS/failure function", "Hash collision handling in Rabin-Karp", "Off-by-one in indices", "Not handling empty pattern" }),
+                resources: ToJson(new object[] {
+                    new { title = "KMP Algorithm", url = "https://www.geeksforgeeks.org/kmp-algorithm-for-pattern-searching/", type = "article" },
+                    new { title = "Rabin-Karp", url = "https://www.geeksforgeeks.org/rabin-karp-algorithm-for-pattern-searching/", type = "article" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             )
@@ -1200,12 +1903,12 @@ Cons:
         self.parent = list(range(n))
         self.rank = [0] * n
         self.count = n  # Number of components
-    
+
     def find(self, x):
         if self.parent[x] != x:
             self.parent[x] = self.find(self.parent[x])
         return self.parent[x]
-    
+
     def union(self, x, y):
         px, py = self.find(x), self.find(y)
         if px == py:
@@ -1219,6 +1922,595 @@ Cons:
         return True",
                 resources: ToJson(new object[] {
                     new { title = "Union Find - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/9", type = "course" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Segment Tree
+            DataStructure.Create(
+                name: "Segment Tree",
+                description: "Tree structure for efficient range queries and updates on arrays.",
+                category: DataStructureCategory.Advanced,
+                whatItIs: @"A Segment Tree is a binary tree where each node represents an interval of the array. The root represents the entire array, and each leaf represents a single element. Internal nodes store aggregate information (sum, min, max) of their children's intervals. Enables O(log n) range queries and updates.",
+                operations: ToJson(new object[] {
+                    new { name = "Build", timeComplexity = "O(n)", description = "Construct tree from array" },
+                    new { name = "Range query", timeComplexity = "O(log n)", description = "Query sum/min/max over range" },
+                    new { name = "Point update", timeComplexity = "O(log n)", description = "Update single element" },
+                    new { name = "Range update", timeComplexity = "O(log n)", description = "With lazy propagation" }
+                }),
+                whenToUse: @"Use Segment Tree when:
+- Need range queries (sum, min, max, GCD)
+- Need point or range updates
+- Multiple queries on same array
+- Competitive programming",
+                tradeoffs: @"Pros:
+- O(log n) range queries and updates
+- Flexible aggregate functions
+- Supports lazy propagation
+
+Cons:
+- O(n) space (typically 4n)
+- Complex implementation
+- Overkill for simple problems",
+                commonUseCases: ToJson(new[] { "Range Sum Query - Mutable", "Range Minimum Query", "Count of Smaller Numbers After Self", "Falling Squares", "Rectangle Area II" }),
+                implementation: @"class SegmentTree:
+    def __init__(self, nums):
+        self.n = len(nums)
+        self.tree = [0] * (4 * self.n)
+        self._build(nums, 0, 0, self.n - 1)
+
+    def _build(self, nums, node, start, end):
+        if start == end:
+            self.tree[node] = nums[start]
+        else:
+            mid = (start + end) // 2
+            self._build(nums, 2*node+1, start, mid)
+            self._build(nums, 2*node+2, mid+1, end)
+            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+
+    def update(self, idx, val):
+        self._update(0, 0, self.n - 1, idx, val)
+
+    def _update(self, node, start, end, idx, val):
+        if start == end:
+            self.tree[node] = val
+        else:
+            mid = (start + end) // 2
+            if idx <= mid:
+                self._update(2*node+1, start, mid, idx, val)
+            else:
+                self._update(2*node+2, mid+1, end, idx, val)
+            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+
+    def query(self, left, right):
+        return self._query(0, 0, self.n - 1, left, right)
+
+    def _query(self, node, start, end, left, right):
+        if right < start or left > end:
+            return 0
+        if left <= start and end <= right:
+            return self.tree[node]
+        mid = (start + end) // 2
+        return self._query(2*node+1, start, mid, left, right) + \
+               self._query(2*node+2, mid+1, end, left, right)",
+                resources: ToJson(new object[] {
+                    new { title = "Segment Tree - CP Algorithms", url = "https://cp-algorithms.com/data_structures/segment_tree.html", type = "article" },
+                    new { title = "Segment Tree Tutorial", url = "https://www.geeksforgeeks.org/segment-tree-data-structure/", type = "article" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Fenwick Tree (Binary Indexed Tree)
+            DataStructure.Create(
+                name: "Fenwick Tree (Binary Indexed Tree)",
+                description: "Space-efficient structure for prefix sums with O(log n) updates and queries.",
+                category: DataStructureCategory.Advanced,
+                whatItIs: @"A Fenwick Tree (Binary Indexed Tree or BIT) efficiently computes prefix sums and supports point updates. Uses clever bit manipulation to determine parent-child relationships. More space-efficient than Segment Tree (uses n elements vs 4n).",
+                operations: ToJson(new object[] {
+                    new { name = "Build", timeComplexity = "O(n log n)", description = "Initialize from array" },
+                    new { name = "Point update", timeComplexity = "O(log n)", description = "Add value at index" },
+                    new { name = "Prefix sum", timeComplexity = "O(log n)", description = "Sum from 0 to index" },
+                    new { name = "Range sum", timeComplexity = "O(log n)", description = "Sum from i to j" }
+                }),
+                whenToUse: @"Use Fenwick Tree when:
+- Need prefix sums with updates
+- Counting inversions
+- Range sum queries
+- Simpler than Segment Tree suffices",
+                tradeoffs: @"Pros:
+- O(n) space (more efficient than Segment Tree)
+- Simple implementation
+- Fast in practice
+
+Cons:
+- Less flexible than Segment Tree
+- Only works for associative, invertible operations
+- Cannot do range updates easily",
+                commonUseCases: ToJson(new[] { "Range Sum Query - Mutable", "Count of Smaller Numbers After Self", "Count inversions", "2D range sums" }),
+                implementation: @"class FenwickTree:
+    def __init__(self, n):
+        self.n = n
+        self.tree = [0] * (n + 1)
+
+    def update(self, i, delta):
+        '''Add delta to index i (1-indexed)'''
+        while i <= self.n:
+            self.tree[i] += delta
+            i += i & (-i)  # Add lowest set bit
+
+    def prefix_sum(self, i):
+        '''Sum from index 1 to i'''
+        total = 0
+        while i > 0:
+            total += self.tree[i]
+            i -= i & (-i)  # Remove lowest set bit
+        return total
+
+    def range_sum(self, left, right):
+        '''Sum from left to right (1-indexed)'''
+        return self.prefix_sum(right) - self.prefix_sum(left - 1)
+
+# Build from array
+def build_fenwick(nums):
+    bit = FenwickTree(len(nums))
+    for i, num in enumerate(nums):
+        bit.update(i + 1, num)
+    return bit",
+                resources: ToJson(new object[] {
+                    new { title = "Fenwick Tree - CP Algorithms", url = "https://cp-algorithms.com/data_structures/fenwick.html", type = "article" },
+                    new { title = "BIT Tutorial", url = "https://www.topcoder.com/thrive/articles/Binary%20Indexed%20Trees", type = "article" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // AVL Tree
+            DataStructure.Create(
+                name: "AVL Tree",
+                description: "Self-balancing BST maintaining height balance for guaranteed O(log n) operations.",
+                category: DataStructureCategory.Tree,
+                whatItIs: @"An AVL Tree is a self-balancing Binary Search Tree where the heights of left and right subtrees differ by at most 1 for every node. Named after Adelson-Velsky and Landis. Uses rotations to maintain balance after insertions and deletions.",
+                operations: ToJson(new object[] {
+                    new { name = "Search", timeComplexity = "O(log n)", description = "Guaranteed balanced height" },
+                    new { name = "Insert", timeComplexity = "O(log n)", description = "Insert + rebalance" },
+                    new { name = "Delete", timeComplexity = "O(log n)", description = "Delete + rebalance" },
+                    new { name = "Min/Max", timeComplexity = "O(log n)", description = "Leftmost/rightmost" }
+                }),
+                whenToUse: @"Use AVL Tree when:
+- Need guaranteed O(log n) operations
+- Frequent searches (more balanced than Red-Black)
+- Ordered data with strict time bounds",
+                tradeoffs: @"Pros:
+- Strictly balanced (height ≤ 1.44 log n)
+- Faster lookups than Red-Black Tree
+- Guaranteed O(log n) worst case
+
+Cons:
+- More rotations on insert/delete
+- Slower insertions than Red-Black
+- Extra height storage per node",
+                commonUseCases: ToJson(new[] { "Database indexing", "In-memory sorted data", "Interval trees", "Priority scheduling" }),
+                implementation: @"class AVLNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = self.right = None
+        self.height = 1
+
+def get_height(node):
+    return node.height if node else 0
+
+def get_balance(node):
+    return get_height(node.left) - get_height(node.right) if node else 0
+
+def right_rotate(y):
+    x = y.left
+    T2 = x.right
+    x.right = y
+    y.left = T2
+    y.height = 1 + max(get_height(y.left), get_height(y.right))
+    x.height = 1 + max(get_height(x.left), get_height(x.right))
+    return x
+
+def left_rotate(x):
+    y = x.right
+    T2 = y.left
+    y.left = x
+    x.right = T2
+    x.height = 1 + max(get_height(x.left), get_height(x.right))
+    y.height = 1 + max(get_height(y.left), get_height(y.right))
+    return y
+
+def insert(root, val):
+    if not root:
+        return AVLNode(val)
+    if val < root.val:
+        root.left = insert(root.left, val)
+    else:
+        root.right = insert(root.right, val)
+
+    root.height = 1 + max(get_height(root.left), get_height(root.right))
+    balance = get_balance(root)
+
+    # Left Left
+    if balance > 1 and val < root.left.val:
+        return right_rotate(root)
+    # Right Right
+    if balance < -1 and val > root.right.val:
+        return left_rotate(root)
+    # Left Right
+    if balance > 1 and val > root.left.val:
+        root.left = left_rotate(root.left)
+        return right_rotate(root)
+    # Right Left
+    if balance < -1 and val < root.right.val:
+        root.right = right_rotate(root.right)
+        return left_rotate(root)
+
+    return root",
+                resources: ToJson(new object[] {
+                    new { title = "AVL Tree - GeeksforGeeks", url = "https://www.geeksforgeeks.org/introduction-to-avl-tree/", type = "article" },
+                    new { title = "AVL Tree Visualization", url = "https://www.cs.usfca.edu/~galles/visualization/AVLtree.html", type = "visualization" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // LRU Cache
+            DataStructure.Create(
+                name: "LRU Cache",
+                description: "Cache with Least Recently Used eviction policy using hash map and doubly linked list.",
+                category: DataStructureCategory.Advanced,
+                whatItIs: @"An LRU (Least Recently Used) Cache is a data structure that stores a limited number of items and evicts the least recently accessed item when full. Combines a hash map for O(1) lookup with a doubly linked list for O(1) recency tracking.",
+                operations: ToJson(new object[] {
+                    new { name = "Get", timeComplexity = "O(1)", description = "Retrieve value and mark as recently used" },
+                    new { name = "Put", timeComplexity = "O(1)", description = "Insert/update and evict if full" },
+                    new { name = "Delete", timeComplexity = "O(1)", description = "Remove specific key" }
+                }),
+                whenToUse: @"Use LRU Cache when:
+- Need caching with size limit
+- Recently used items are more valuable
+- Implementing memoization
+- Database/web caching",
+                tradeoffs: @"Pros:
+- O(1) all operations
+- Automatic eviction
+- Good cache hit rates for temporal locality
+
+Cons:
+- Extra memory for linked list
+- Not optimal for all access patterns
+- More complex than simple cache",
+                commonUseCases: ToJson(new[] { "LRU Cache problem", "Web browser cache", "Database buffer pool", "CPU cache simulation", "API response caching" }),
+                implementation: @"from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        self.cache.move_to_end(key)  # Mark as recently used
+        return self.cache[key]
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)  # Remove oldest
+
+# Manual implementation with doubly linked list
+class DLinkedNode:
+    def __init__(self, key=0, val=0):
+        self.key = key
+        self.val = val
+        self.prev = None
+        self.next = None
+
+class LRUCacheManual:
+    def __init__(self, capacity):
+        self.cache = {}
+        self.capacity = capacity
+        self.head = DLinkedNode()  # Dummy head
+        self.tail = DLinkedNode()  # Dummy tail
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    def _remove(self, node):
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    def _add_to_head(self, node):
+        node.next = self.head.next
+        node.prev = self.head
+        self.head.next.prev = node
+        self.head.next = node",
+                resources: ToJson(new object[] {
+                    new { title = "LRU Cache - LeetCode", url = "https://leetcode.com/problems/lru-cache/", type = "problem" },
+                    new { title = "LRU Cache Design", url = "https://www.geeksforgeeks.org/lru-cache-implementation/", type = "article" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Skip List
+            DataStructure.Create(
+                name: "Skip List",
+                description: "Probabilistic data structure with O(log n) search using multiple linked list layers.",
+                category: DataStructureCategory.Advanced,
+                whatItIs: @"A Skip List is a probabilistic data structure that uses multiple layers of linked lists to achieve O(log n) average search time. Each element has a random height determining which layers it appears in. Higher layers act as 'express lanes' for faster traversal.",
+                operations: ToJson(new object[] {
+                    new { name = "Search", timeComplexity = "O(log n)*", description = "Average case, O(n) worst" },
+                    new { name = "Insert", timeComplexity = "O(log n)*", description = "Average case" },
+                    new { name = "Delete", timeComplexity = "O(log n)*", description = "Average case" },
+                    new { name = "Range query", timeComplexity = "O(log n + k)", description = "k = number of results" }
+                }),
+                whenToUse: @"Use Skip List when:
+- Need ordered data with fast operations
+- Simpler alternative to balanced trees
+- Concurrent access needed (lock-free variants)
+- Range queries required",
+                tradeoffs: @"Pros:
+- Simple to implement vs balanced trees
+- Good for concurrent access
+- No rotations needed
+- Efficient range queries
+
+Cons:
+- Probabilistic guarantees (not worst-case)
+- More space than BST
+- Cache-unfriendly",
+                commonUseCases: ToJson(new[] { "Redis sorted sets", "LevelDB/RocksDB", "Concurrent data structures", "In-memory indexes" }),
+                implementation: @"import random
+
+class SkipListNode:
+    def __init__(self, val, level):
+        self.val = val
+        self.forward = [None] * (level + 1)
+
+class SkipList:
+    def __init__(self, max_level=16, p=0.5):
+        self.max_level = max_level
+        self.p = p
+        self.level = 0
+        self.head = SkipListNode(float('-inf'), max_level)
+
+    def random_level(self):
+        level = 0
+        while random.random() < self.p and level < self.max_level:
+            level += 1
+        return level
+
+    def search(self, target):
+        current = self.head
+        for i in range(self.level, -1, -1):
+            while current.forward[i] and current.forward[i].val < target:
+                current = current.forward[i]
+        current = current.forward[0]
+        return current and current.val == target
+
+    def insert(self, val):
+        update = [None] * (self.max_level + 1)
+        current = self.head
+
+        for i in range(self.level, -1, -1):
+            while current.forward[i] and current.forward[i].val < val:
+                current = current.forward[i]
+            update[i] = current
+
+        level = self.random_level()
+        if level > self.level:
+            for i in range(self.level + 1, level + 1):
+                update[i] = self.head
+            self.level = level
+
+        new_node = SkipListNode(val, level)
+        for i in range(level + 1):
+            new_node.forward[i] = update[i].forward[i]
+            update[i].forward[i] = new_node",
+                resources: ToJson(new object[] {
+                    new { title = "Skip List - Wikipedia", url = "https://en.wikipedia.org/wiki/Skip_list", type = "article" },
+                    new { title = "Skip List Tutorial", url = "https://www.geeksforgeeks.org/skip-list/", type = "article" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Monotonic Queue
+            DataStructure.Create(
+                name: "Monotonic Queue",
+                description: "Queue maintaining elements in sorted order for efficient sliding window min/max.",
+                category: DataStructureCategory.Linear,
+                whatItIs: @"A Monotonic Queue (or Monotonic Deque) maintains elements in increasing or decreasing order. When adding an element, removes all elements that violate the monotonic property. Combined with index tracking, enables O(1) amortized sliding window min/max queries.",
+                operations: ToJson(new object[] {
+                    new { name = "Push", timeComplexity = "O(1)*", description = "Amortized, may remove multiple elements" },
+                    new { name = "Pop front", timeComplexity = "O(1)", description = "Remove expired elements" },
+                    new { name = "Get min/max", timeComplexity = "O(1)", description = "Front of queue" }
+                }),
+                whenToUse: @"Use Monotonic Queue when:
+- Sliding window minimum/maximum
+- Need to maintain sorted window
+- Next greater/smaller with window",
+                tradeoffs: @"Pros:
+- O(1) amortized operations
+- Perfect for sliding window problems
+- Each element pushed/popped once
+
+Cons:
+- Specific use case
+- More complex than simple queue
+- Only maintains one extreme",
+                commonUseCases: ToJson(new[] { "Sliding Window Maximum", "Shortest Subarray with Sum at Least K", "Jump Game VI", "Constrained Subsequence Sum" }),
+                implementation: @"from collections import deque
+
+class MonotonicQueue:
+    '''Maintains decreasing order for max queries'''
+    def __init__(self):
+        self.dq = deque()  # Stores (value, index)
+
+    def push(self, val, idx):
+        # Remove smaller elements (they'll never be max)
+        while self.dq and self.dq[-1][0] <= val:
+            self.dq.pop()
+        self.dq.append((val, idx))
+
+    def pop_expired(self, left_bound):
+        # Remove elements outside window
+        while self.dq and self.dq[0][1] < left_bound:
+            self.dq.popleft()
+
+    def get_max(self):
+        return self.dq[0][0] if self.dq else None
+
+# Sliding window maximum
+def maxSlidingWindow(nums, k):
+    mq = MonotonicQueue()
+    result = []
+
+    for i, num in enumerate(nums):
+        mq.push(num, i)
+        mq.pop_expired(i - k + 1)
+        if i >= k - 1:
+            result.append(mq.get_max())
+
+    return result",
+                resources: ToJson(new object[] {
+                    new { title = "Sliding Window Maximum", url = "https://leetcode.com/problems/sliding-window-maximum/", type = "problem" },
+                    new { title = "Monotonic Queue Explained", url = "https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/", type = "article" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Graph (Adjacency Matrix)
+            DataStructure.Create(
+                name: "Graph (Adjacency Matrix)",
+                description: "Graph represented as 2D matrix where matrix[i][j] indicates edge between vertices i and j.",
+                category: DataStructureCategory.Graph,
+                whatItIs: @"An Adjacency Matrix represents a graph as a 2D array where entry [i][j] indicates if there's an edge from vertex i to j (and its weight for weighted graphs). O(1) edge lookup but O(V²) space regardless of edge count.",
+                operations: ToJson(new object[] {
+                    new { name = "Check edge", timeComplexity = "O(1)", description = "Direct array access" },
+                    new { name = "Add edge", timeComplexity = "O(1)", description = "Set matrix entry" },
+                    new { name = "Remove edge", timeComplexity = "O(1)", description = "Clear matrix entry" },
+                    new { name = "Get all neighbors", timeComplexity = "O(V)", description = "Scan entire row" },
+                    new { name = "Space", timeComplexity = "O(V²)", description = "Fixed regardless of edges" }
+                }),
+                whenToUse: @"Use Adjacency Matrix when:
+- Graph is dense (E ≈ V²)
+- Need O(1) edge existence checks
+- Working with weighted graphs
+- Floyd-Warshall or similar algorithms",
+                tradeoffs: @"Pros:
+- O(1) edge lookup
+- Simple implementation
+- Good for dense graphs
+- Easy to represent weighted edges
+
+Cons:
+- O(V²) space always
+- Wasteful for sparse graphs
+- O(V) to find all neighbors",
+                commonUseCases: ToJson(new[] { "Floyd-Warshall", "Dense graph algorithms", "Small graphs", "Graph with many edge queries" }),
+                implementation: @"# Create adjacency matrix
+def create_adj_matrix(n, edges, directed=False):
+    matrix = [[0] * n for _ in range(n)]
+    for u, v in edges:
+        matrix[u][v] = 1
+        if not directed:
+            matrix[v][u] = 1
+    return matrix
+
+# Weighted graph
+def create_weighted_matrix(n, edges, directed=False):
+    INF = float('inf')
+    matrix = [[INF] * n for _ in range(n)]
+    for i in range(n):
+        matrix[i][i] = 0
+    for u, v, w in edges:
+        matrix[u][v] = w
+        if not directed:
+            matrix[v][u] = w
+    return matrix
+
+# Check edge
+def has_edge(matrix, u, v):
+    return matrix[u][v] != 0  # or != INF for weighted
+
+# Get neighbors
+def get_neighbors(matrix, u):
+    return [v for v in range(len(matrix)) if matrix[u][v] != 0]",
+                resources: ToJson(new object[] {
+                    new { title = "Graph Representations", url = "https://www.geeksforgeeks.org/graph-and-its-representations/", type = "article" }
+                }),
+                relatedStructureIds: ToJson(Array.Empty<Guid>())
+            ),
+
+            // Circular Buffer
+            DataStructure.Create(
+                name: "Circular Buffer (Ring Buffer)",
+                description: "Fixed-size buffer that wraps around, useful for streaming data and producer-consumer patterns.",
+                category: DataStructureCategory.Linear,
+                whatItIs: @"A Circular Buffer (Ring Buffer) is a fixed-size queue that wraps around when reaching the end. Uses two pointers (head and tail) with modulo arithmetic. When full, new data overwrites the oldest data. Efficient for streaming and bounded queues.",
+                operations: ToJson(new object[] {
+                    new { name = "Enqueue", timeComplexity = "O(1)", description = "Add to tail" },
+                    new { name = "Dequeue", timeComplexity = "O(1)", description = "Remove from head" },
+                    new { name = "Peek", timeComplexity = "O(1)", description = "View head element" },
+                    new { name = "IsFull/IsEmpty", timeComplexity = "O(1)", description = "Check buffer state" }
+                }),
+                whenToUse: @"Use Circular Buffer when:
+- Fixed memory budget
+- Streaming/real-time data
+- Producer-consumer patterns
+- Audio/video buffering
+- Logging recent events",
+                tradeoffs: @"Pros:
+- Fixed memory usage
+- O(1) all operations
+- No memory allocation after init
+- Cache-friendly
+
+Cons:
+- Fixed capacity
+- Loses old data when full
+- Slightly complex pointer management",
+                commonUseCases: ToJson(new[] { "Design Circular Queue", "Moving average from data stream", "Audio buffers", "Network packet buffers", "Log rotation" }),
+                implementation: @"class CircularBuffer:
+    def __init__(self, capacity):
+        self.buffer = [None] * capacity
+        self.capacity = capacity
+        self.head = 0  # Read position
+        self.tail = 0  # Write position
+        self.size = 0
+
+    def is_empty(self):
+        return self.size == 0
+
+    def is_full(self):
+        return self.size == self.capacity
+
+    def enqueue(self, val):
+        if self.is_full():
+            return False  # Or overwrite: self.head = (self.head + 1) % self.capacity
+        self.buffer[self.tail] = val
+        self.tail = (self.tail + 1) % self.capacity
+        self.size += 1
+        return True
+
+    def dequeue(self):
+        if self.is_empty():
+            return None
+        val = self.buffer[self.head]
+        self.head = (self.head + 1) % self.capacity
+        self.size -= 1
+        return val
+
+    def front(self):
+        return self.buffer[self.head] if not self.is_empty() else None
+
+    def rear(self):
+        if self.is_empty():
+            return None
+        return self.buffer[(self.tail - 1) % self.capacity]",
+                resources: ToJson(new object[] {
+                    new { title = "Design Circular Queue - LeetCode", url = "https://leetcode.com/problems/design-circular-queue/", type = "problem" },
+                    new { title = "Circular Buffer - Wikipedia", url = "https://en.wikipedia.org/wiki/Circular_buffer", type = "article" }
                 }),
                 relatedStructureIds: ToJson(Array.Empty<Guid>())
             )

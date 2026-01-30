@@ -91,7 +91,7 @@ public static class AttemptEndpoints
         .Produces(StatusCodes.Status404NotFound);
   }
 
-  private static async Task<Results<Created<AttemptResponse>, NotFound, BadRequest<ProblemDetails>>> StartAttempt(
+  private static async Task<Results<Created<AttemptResponse>, NotFound, BadRequest<ProblemDetails>, Conflict<ProblemDetails>>> StartAttempt(
       StartAttemptRequest request,
       IAttemptRepository attemptRepository,
       IProblemRepository problemRepository,
@@ -101,6 +101,24 @@ public static class AttemptEndpoints
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId))
       return TypedResults.BadRequest(new ProblemDetails { Detail = "User not authenticated" });
+
+    // LOOP ENFORCEMENT: Check for active attempt
+    var activeAttempt = await attemptRepository.GetActiveAttemptByUserIdAsync(userId, ct);
+    if (activeAttempt is not null)
+    {
+      var problemTitle = activeAttempt.Problem?.Title ?? activeAttempt.LeetCodeProblem?.Title ?? "Unknown";
+      return TypedResults.Conflict(new ProblemDetails
+      {
+        Title = "Active Attempt Exists",
+        Detail = AttemptErrors.ActiveAttemptExists.Message,
+        Extensions = new Dictionary<string, object?>
+        {
+          ["activeAttemptId"] = activeAttempt.Id,
+          ["problemTitle"] = problemTitle,
+          ["startedAt"] = activeAttempt.StartedAt
+        }
+      });
+    }
 
     var problem = await problemRepository.GetByIdAsync(request.ProblemId, ct);
     if (problem is null)
@@ -154,7 +172,9 @@ public static class AttemptEndpoints
         request.RejectionReason,
         request.Confidence,
         request.ThinkingDurationSeconds,
-        minimumDuration);
+        minimumDuration,
+        request.KeyInvariant,
+        request.PrimaryRisk);
 
     if (result.IsFailure)
       return TypedResults.BadRequest(new ProblemDetails { Detail = result.Error.Message });
@@ -220,7 +240,12 @@ public static class AttemptEndpoints
     if (attempt.UserId != userId)
       return TypedResults.NotFound();
 
-    var result = attempt.Complete(request.IsPatternCorrect, request.Confidence);
+    var result = attempt.Complete(
+        request.Outcome,
+        request.FirstFailure,
+        request.SwitchedApproach,
+        request.SwitchReason,
+        request.Confidence);
 
     if (result.IsFailure)
       return TypedResults.BadRequest(new ProblemDetails { Detail = result.Error.Message });

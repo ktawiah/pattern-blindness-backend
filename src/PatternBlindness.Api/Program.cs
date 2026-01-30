@@ -98,6 +98,7 @@ app.MapDataStructureEndpoints();
 app.MapProblemEndpoints();
 app.MapAttemptEndpoints();
 app.MapLeetCodeEndpoints();
+app.MapUserProfileEndpoints();
 
 // Root redirect to Swagger
 app.MapGet("/", () => Results.Redirect("/swagger"));

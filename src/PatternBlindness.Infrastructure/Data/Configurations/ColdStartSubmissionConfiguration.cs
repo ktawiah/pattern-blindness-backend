@@ -29,6 +29,13 @@ public class ColdStartSubmissionConfiguration : IEntityTypeConfiguration<ColdSta
         builder.Property(c => c.PrimaryVsSecondaryReason)
             .HasMaxLength(1000);
 
+        // Approach lock-in fields (cognitive toll booth)
+        builder.Property(c => c.KeyInvariant)
+            .HasMaxLength(1000);
+
+        builder.Property(c => c.PrimaryRisk)
+            .HasMaxLength(1000);
+
         builder.Property(c => c.CreatedAt)
             .IsRequired();
 

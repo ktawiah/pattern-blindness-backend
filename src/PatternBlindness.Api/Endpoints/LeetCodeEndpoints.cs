@@ -199,7 +199,7 @@ public static class LeetCodeEndpoints
     return TypedResults.Ok(MapToAnalysisResponse(analysis));
   }
 
-  private static async Task<Results<Ok<AttemptStartResponse>, NotFound, UnauthorizedHttpResult>> StartAttempt(
+  private static async Task<Results<Ok<AttemptStartResponse>, NotFound, UnauthorizedHttpResult, Conflict<Microsoft.AspNetCore.Mvc.ProblemDetails>>> StartAttempt(
       string titleSlug,
       HttpContext httpContext,
       ILeetCodeService leetCodeService,
@@ -211,6 +211,24 @@ public static class LeetCodeEndpoints
 
     if (string.IsNullOrEmpty(userId))
       return TypedResults.Unauthorized();
+
+    // LOOP ENFORCEMENT: Check for active attempt
+    var activeAttempt = await attemptRepository.GetActiveAttemptByUserIdAsync(userId, ct);
+    if (activeAttempt is not null)
+    {
+      var problemTitle = activeAttempt.Problem?.Title ?? activeAttempt.LeetCodeProblem?.Title ?? "Unknown";
+      return TypedResults.Conflict(new Microsoft.AspNetCore.Mvc.ProblemDetails
+      {
+        Title = "Active Attempt Exists",
+        Detail = "You must complete or abandon your current attempt before starting a new one.",
+        Extensions = new Dictionary<string, object?>
+        {
+          ["activeAttemptId"] = activeAttempt.Id,
+          ["problemTitle"] = problemTitle,
+          ["startedAt"] = activeAttempt.StartedAt
+        }
+      });
+    }
 
     // Get or fetch the problem
     var cached = await cacheRepository.GetBySlugAsync(titleSlug, ct);

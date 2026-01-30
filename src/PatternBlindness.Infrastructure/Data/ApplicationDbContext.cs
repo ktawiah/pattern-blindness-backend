@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   public DbSet<ProblemAnalysis> ProblemAnalyses => Set<ProblemAnalysis>();
   public DbSet<Reflection> Reflections => Set<Reflection>();
   public DbSet<DataStructure> DataStructures => Set<DataStructure>();
+  public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

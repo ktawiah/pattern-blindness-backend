@@ -24,5 +24,8 @@ public enum PatternCategory
   BitManipulation = 17,
   UnionFind = 18,
   MonotonicStack = 19,
-  Intervals = 20
+  Intervals = 20,
+  DivideAndConquer = 21,
+  PrefixSum = 22,
+  Matrix = 23
 }

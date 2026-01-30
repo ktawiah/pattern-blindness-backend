@@ -92,6 +92,30 @@ public class Attempt : Entity
   /// </summary>
   public int? TotalTimeSeconds { get; private set; }
 
+  // ===== RETURN GATE FIELDS =====
+
+  /// <summary>
+  /// Outcome of the user's chosen approach (Worked/PartiallyWorked/Failed).
+  /// Captured in the return gate after coding.
+  /// </summary>
+  public ApproachOutcome? Outcome { get; private set; }
+
+  /// <summary>
+  /// What broke first if the approach failed or partially worked.
+  /// </summary>
+  public FailureReason? FirstFailure { get; private set; }
+
+  /// <summary>
+  /// Whether the user switched approaches mid-solve.
+  /// Indicates panic switching behavior.
+  /// </summary>
+  public bool? SwitchedApproachMidSolve { get; private set; }
+
+  /// <summary>
+  /// Reason for switching approaches (if SwitchedApproachMidSolve is true).
+  /// </summary>
+  public string? SwitchReason { get; private set; }
+
   /// <summary>
   /// Creates a new attempt for a legacy Problem.
   /// </summary>
@@ -152,7 +176,9 @@ public class Attempt : Entity
       string? rejectionReason,
       ConfidenceLevel? confidence,
       int thinkingDurationSeconds,
-      int minimumDurationSeconds = 30)
+      int minimumDurationSeconds = 30,
+      string? keyInvariant = null,
+      string? primaryRisk = null)
   {
     if (Status != AttemptStatus.InProgress)
       return Result.Failure(AttemptErrors.InvalidStatusTransition);
@@ -169,7 +195,9 @@ public class Attempt : Entity
         rejectedPatternId,
         rejectionReason,
         thinkingDurationSeconds,
-        minimumDurationSeconds);
+        minimumDurationSeconds,
+        keyInvariant,
+        primaryRisk);
 
     ChosenPatternId = chosenPatternId;
     if (confidence.HasValue)
@@ -184,7 +212,44 @@ public class Attempt : Entity
   }
 
   /// <summary>
-  /// Marks the attempt as solved.
+  /// Marks the attempt as solved with return gate data.
+  /// </summary>
+  public Result Complete(
+      ApproachOutcome outcome,
+      FailureReason? firstFailure,
+      bool switchedApproach,
+      string? switchReason,
+      int? confidenceLevel = null)
+  {
+    if (Status != AttemptStatus.ColdStartCompleted)
+      return Result.Failure(AttemptErrors.ColdStartRequired);
+
+    // Determine if pattern was correct based on outcome
+    IsPatternCorrect = outcome == ApproachOutcome.Worked;
+
+    // Set return gate fields
+    Outcome = outcome;
+    FirstFailure = firstFailure;
+    SwitchedApproachMidSolve = switchedApproach;
+    SwitchReason = switchReason?.Trim();
+
+    // Set confidence from the complete request if provided
+    if (confidenceLevel.HasValue && confidenceLevel.Value >= 1 && confidenceLevel.Value <= 5)
+    {
+      Confidence = (ConfidenceLevel)confidenceLevel.Value;
+    }
+
+    Status = AttemptStatus.Solved;
+    CompletedAt = DateTime.UtcNow;
+    TotalTimeSeconds = (int)(CompletedAt.Value - StartedAt).TotalSeconds;
+    UpdatedAt = DateTime.UtcNow;
+
+    AddDomainEvent(new AttemptCompletedEvent(Id, UserId, IsPatternCorrect, Confidence));
+    return Result.Success();
+  }
+
+  /// <summary>
+  /// Marks the attempt as solved (legacy method for backwards compatibility).
   /// </summary>
   public Result Complete(bool isPatternCorrect, int? confidenceLevel = null)
   {
@@ -192,6 +257,9 @@ public class Attempt : Entity
       return Result.Failure(AttemptErrors.ColdStartRequired);
 
     IsPatternCorrect = isPatternCorrect;
+
+    // Infer outcome from isPatternCorrect for legacy calls
+    Outcome = isPatternCorrect ? ApproachOutcome.Worked : ApproachOutcome.Failed;
 
     // Set confidence from the complete request if provided
     if (confidenceLevel.HasValue && confidenceLevel.Value >= 1 && confidenceLevel.Value <= 5)
@@ -274,4 +342,5 @@ public static class AttemptErrors
   public static readonly Error ColdStartRequired = new("Attempt.ColdStartRequired", "Cold start submission is required before completing.");
   public static readonly Error ColdStartTooShort = new("Attempt.ColdStartTooShort", "Cold start thinking phase must be at least 90 seconds.");
   public static readonly Error InvalidStatusTransition = new("Attempt.InvalidStatusTransition", "Invalid status transition.");
+  public static readonly Error ActiveAttemptExists = new("Attempt.ActiveAttemptExists", "You must complete or abandon your current attempt before starting a new one.");
 }

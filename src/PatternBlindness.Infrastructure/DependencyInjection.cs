@@ -33,6 +33,7 @@ public static class DependencyInjection
     services.AddScoped<ILeetCodeProblemCacheRepository, LeetCodeProblemCacheRepository>();
     services.AddScoped<IAnalysisRepository, AnalysisRepository>();
     services.AddScoped<IDataStructureRepository, DataStructureRepository>();
+    services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 
     // Register HTTP client and LeetCode service
     services.AddHttpClient<ILeetCodeService, LeetCodeService>(client =>

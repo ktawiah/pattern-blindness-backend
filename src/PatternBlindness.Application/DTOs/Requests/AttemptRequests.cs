@@ -37,17 +37,32 @@ public record SubmitColdStartRequest(
     ConfidenceLevel? Confidence,
 
     /// <summary>Time spent thinking in seconds.</summary>
-    int ThinkingDurationSeconds);
+    int ThinkingDurationSeconds,
+
+    /// <summary>Key invariant: What must remain true throughout the algorithm?</summary>
+    string? KeyInvariant = null,
+
+    /// <summary>Primary risk: Where could this approach fail?</summary>
+    string? PrimaryRisk = null);
 
 /// <summary>
-/// Request to complete an attempt.
+/// Request to complete an attempt with return gate data.
 /// </summary>
 public record CompleteAttemptRequest(
     /// <summary>User's confidence level (1-5).</summary>
     int Confidence,
 
-    /// <summary>Whether the user's pattern choice was correct.</summary>
-    bool IsPatternCorrect);
+    /// <summary>Outcome of the approach: Worked, PartiallyWorked, or Failed.</summary>
+    ApproachOutcome Outcome,
+
+    /// <summary>What broke first if not Worked (optional).</summary>
+    FailureReason? FirstFailure = null,
+
+    /// <summary>Whether the user switched approaches mid-solve.</summary>
+    bool SwitchedApproach = false,
+
+    /// <summary>Reason for switching approaches (if applicable).</summary>
+    string? SwitchReason = null);
 
 /// <summary>
 /// Request to generate a reflection for a LeetCode-based attempt.

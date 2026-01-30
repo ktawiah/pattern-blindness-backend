@@ -91,6 +91,24 @@ public class AttemptRepository : IAttemptRepository
     await _context.SaveChangesAsync(ct);
   }
 
+  public async Task<Attempt?> GetActiveAttemptByUserIdAsync(string userId, CancellationToken ct = default)
+  {
+    // An "active" attempt is one that is InProgress or ColdStartCompleted (not yet solved/abandoned)
+    return await _context.Attempts
+        .Include(a => a.Problem)
+        .Include(a => a.LeetCodeProblem)
+        .FirstOrDefaultAsync(a =>
+            a.UserId == userId &&
+            (a.Status == AttemptStatus.InProgress || a.Status == AttemptStatus.ColdStartCompleted),
+            ct);
+  }
+
+  public async Task<int> GetCompletedAttemptCountAsync(string userId, CancellationToken ct = default)
+  {
+    return await _context.Attempts
+        .CountAsync(a => a.UserId == userId && a.Status == AttemptStatus.Solved, ct);
+  }
+
   public async Task<IReadOnlyList<ConfidenceStats>> GetConfidenceStatsAsync(string userId, CancellationToken ct = default)
   {
     return await _context.Attempts

@@ -1,18 +1,10 @@
-# Build stage
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /app
-
-# Copy all project files
-COPY src/ .
-
-# Restore and publish
-RUN dotnet publish PatternBlindness.Api/PatternBlindness.Api.csproj -c Release -o /out
-
-# Runtime stage
+# Runtime-only Dockerfile
+# Build locally first with: dotnet publish src/PatternBlindness.Api/PatternBlindness.Api.csproj -c Release -o publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-COPY --from=build /out .
+# Copy pre-built publish output
+COPY publish/ .
 
 # Configure ASP.NET Core
 ENV ASPNETCORE_URLS=http://+:8080

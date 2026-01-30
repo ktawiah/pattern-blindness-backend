@@ -19,6 +19,18 @@ public interface IAttemptRepository
   Task UpdateAsync(Attempt attempt, CancellationToken ct = default);
 
   /// <summary>
+  /// Gets the active (in-progress or cold-start-completed) attempt for a user.
+  /// Used for loop enforcement - users must complete current attempt before starting a new one.
+  /// </summary>
+  Task<Attempt?> GetActiveAttemptByUserIdAsync(string userId, CancellationToken ct = default);
+
+  /// <summary>
+  /// Gets the count of completed attempts for a user.
+  /// Used for phase progression.
+  /// </summary>
+  Task<int> GetCompletedAttemptCountAsync(string userId, CancellationToken ct = default);
+
+  /// <summary>
   /// Gets the count of attempts by user grouped by correctness and confidence.
   /// Used for confidence vs correctness tracking.
   /// </summary>

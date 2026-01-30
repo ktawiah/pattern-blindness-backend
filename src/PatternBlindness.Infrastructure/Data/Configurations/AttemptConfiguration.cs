@@ -37,6 +37,18 @@ public class AttemptConfiguration : IEntityTypeConfiguration<Attempt>
         builder.Property(a => a.ChosenPatternName)
             .HasMaxLength(100);
 
+        // Return gate fields
+        builder.Property(a => a.Outcome)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.Property(a => a.FirstFailure)
+            .HasConversion<string>()
+            .HasMaxLength(30);
+
+        builder.Property(a => a.SwitchReason)
+            .HasMaxLength(1000);
+
         builder.Property(a => a.CreatedAt)
             .IsRequired();
 

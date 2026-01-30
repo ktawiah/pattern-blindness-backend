@@ -78,6 +78,20 @@ public class ColdStartSubmission : Entity
   /// </summary>
   public string? RejectionReason { get; private set; }
 
+  // ===== APPROACH LOCK-IN FIELDS (Cognitive Toll Booth) =====
+
+  /// <summary>
+  /// The key invariant the user identified.
+  /// "What must remain true throughout your algorithm?"
+  /// </summary>
+  public string? KeyInvariant { get; private set; }
+
+  /// <summary>
+  /// The primary risk the user identified.
+  /// "Where could this approach fail?"
+  /// </summary>
+  public string? PrimaryRisk { get; private set; }
+
   /// <summary>
   /// Creates a new cold start submission with multiple hypothesis support.
   /// </summary>
@@ -90,7 +104,9 @@ public class ColdStartSubmission : Entity
       Guid? rejectedPatternId,
       string? rejectionReason,
       int thinkingDurationSeconds,
-      int minimumDurationSeconds = 30)
+      int minimumDurationSeconds = 30,
+      string? keyInvariant = null,
+      string? primaryRisk = null)
   {
     if (attemptId == Guid.Empty)
       throw new ArgumentException("Attempt ID is required.", nameof(attemptId));
@@ -115,7 +131,9 @@ public class ColdStartSubmission : Entity
       SecondaryPatternId = secondaryPatternId,
       PrimaryVsSecondaryReason = primaryVsSecondaryReason?.Trim(),
       RejectedPatternId = rejectedPatternId,
-      RejectionReason = rejectionReason?.Trim()
+      RejectionReason = rejectionReason?.Trim(),
+      KeyInvariant = keyInvariant?.Trim(),
+      PrimaryRisk = primaryRisk?.Trim()
     };
   }
 }
