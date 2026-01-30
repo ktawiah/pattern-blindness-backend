@@ -22,8 +22,10 @@ public class OpenAiLlmService : ILlmService
   {
     _logger = logger;
 
-    var apiKey = configuration["OpenAI:ApiKey"]
-        ?? throw new InvalidOperationException("OpenAI API key not configured. Set 'OpenAI:ApiKey' in configuration.");
+    // Check environment variable first (for Docker), then fall back to configuration
+    var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY")
+        ?? configuration["OpenAI:ApiKey"]
+        ?? throw new InvalidOperationException("OpenAI API key not configured. Set OPENAI_API_KEY environment variable or 'OpenAI:ApiKey' in configuration.");
 
     _analysisModel = configuration["OpenAI:AnalysisModel"] ?? "gpt-4o-mini";
     _reflectionModel = configuration["OpenAI:ReflectionModel"] ?? "gpt-4o";
