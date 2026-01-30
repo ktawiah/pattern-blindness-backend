@@ -4,7 +4,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,12 +14,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PatternBlindness.Application\PatternBlindness.Application.csproj" />
-    <ProjectReference Include="..\PatternBlindness.Infrastructure\PatternBlindness.Infrastructure.csproj" />
+    <ProjectReference Include="../PatternBlindness.Application/PatternBlindness.Application.csproj" />
+    <ProjectReference Include="../PatternBlindness.Infrastructure/PatternBlindness.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
