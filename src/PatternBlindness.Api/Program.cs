@@ -32,7 +32,32 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddAuthentication();
+// Configure OAuth providers (optional - only if credentials are provided)
+var authBuilder = builder.Services.AddAuthentication();
+
+var googleClientId = builder.Configuration["OAuth:Google:ClientId"];
+var googleClientSecret = builder.Configuration["OAuth:Google:ClientSecret"];
+if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+    });
+}
+
+var githubClientId = builder.Configuration["OAuth:GitHub:ClientId"];
+var githubClientSecret = builder.Configuration["OAuth:GitHub:ClientSecret"];
+if (!string.IsNullOrEmpty(githubClientId) && !string.IsNullOrEmpty(githubClientSecret))
+{
+    authBuilder.AddGitHub(options =>
+    {
+        options.ClientId = githubClientId;
+        options.ClientSecret = githubClientSecret;
+        options.Scope.Add("user:email");
+    });
+}
+
 builder.Services.AddAuthorization(options =>
 {
     // For now, AdminOnly policy just requires authentication
