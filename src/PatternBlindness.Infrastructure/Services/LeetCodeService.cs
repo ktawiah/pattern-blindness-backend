@@ -210,7 +210,7 @@ public partial class LeetCodeService : ILeetCodeService
           q.QuestionFrontendId,
           q.Title,
           q.TitleSlug,
-          StripHtml(q.Content ?? ""),
+          SanitizeHtml(q.Content ?? ""),
           q.Difficulty,
           q.TopicTags?.Select(t => t.Name).ToList() ?? [],
           examples);
@@ -628,6 +628,40 @@ public partial class LeetCodeService : ILeetCodeService
     text = WhitespaceRegex().Replace(text, " ");
     return text.Trim();
   }
+
+  /// <summary>
+  /// Sanitizes HTML content by keeping safe formatting tags and removing potentially dangerous ones.
+  /// This preserves the structure for proper display in the frontend.
+  /// </summary>
+  private static string SanitizeHtml(string html)
+  {
+    if (string.IsNullOrEmpty(html))
+      return "";
+
+    // LeetCode content is generally safe, but we'll do basic sanitization
+    // Remove script tags and their content
+    var result = ScriptTagRegex().Replace(html, "");
+    // Remove style tags and their content
+    result = StyleTagRegex().Replace(result, "");
+    // Remove event handlers (onclick, onload, etc.)
+    result = EventHandlerRegex().Replace(result, "");
+    // Remove javascript: URLs
+    result = JavascriptUrlRegex().Replace(result, "href=\"#\"");
+
+    return result.Trim();
+  }
+
+  [GeneratedRegex(@"<script[^>]*>[\s\S]*?</script>", RegexOptions.IgnoreCase)]
+  private static partial Regex ScriptTagRegex();
+
+  [GeneratedRegex(@"<style[^>]*>[\s\S]*?</style>", RegexOptions.IgnoreCase)]
+  private static partial Regex StyleTagRegex();
+
+  [GeneratedRegex(@"\s*on\w+\s*=\s*[""'][^""']*[""']", RegexOptions.IgnoreCase)]
+  private static partial Regex EventHandlerRegex();
+
+  [GeneratedRegex(@"href\s*=\s*[""']javascript:[^""']*[""']", RegexOptions.IgnoreCase)]
+  private static partial Regex JavascriptUrlRegex();
 
   [GeneratedRegex(@"<li>([^<]+)</li>", RegexOptions.IgnoreCase)]
   private static partial Regex ConstraintRegex();
