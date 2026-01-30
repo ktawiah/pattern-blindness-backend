@@ -119,21 +119,35 @@ This technique reduces the need for nested loops, often improving time complexit
                 commonUseCases: ToJson(new[] { "Two Sum in sorted array", "Container with most water", "Palindrome check", "Remove duplicates", "Merge sorted arrays" }),
                 timeComplexity: "O(n)",
                 spaceComplexity: "O(1)",
-                pseudoCode: @"left = 0
-right = len(arr) - 1
+                pseudoCode: @"TWO POINTERS ALGORITHM (Opposite Direction)
 
-while left < right:
-    if condition_met(arr[left], arr[right]):
-        return result
-    elif need_larger_value:
-        left += 1
-    else:
-        right -= 1",
+1. INITIALIZE two pointers:
+   - left pointer at the start of the array (index 0)
+   - right pointer at the end of the array (index n-1)
+
+2. WHILE left < right:
+   a. EXAMINE elements at both pointers
+   b. IF the pair satisfies the target condition:
+      - Record or return the result
+   c. DECIDE which pointer to move:
+      - Move LEFT pointer right if you need a larger value at left
+      - Move RIGHT pointer left if you need a smaller value at right
+   d. INCREMENT/DECREMENT the chosen pointer
+
+3. RETURN result (or indicate no valid pair found)
+
+KEY INSIGHT: In a sorted array, moving the left pointer increases the value,
+moving the right pointer decreases it. This allows systematic elimination
+of invalid pairs without checking all O(n²) combinations.",
                 triggerSignals: ToJson(new[] { "Sorted array/string", "Find pair with sum/difference", "Palindrome", "In-place modification", "Comparing from both ends" }),
                 commonMistakes: ToJson(new[] { "Off-by-one errors with indices", "Not handling duplicates properly", "Wrong pointer movement direction", "Missing edge cases (empty array, single element)" }),
                 resources: ToJson(new object[] {
                     new { title = "Two Pointers - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/4", type = "course" },
-                    new { title = "Two Pointers Pattern - LeetCode", url = "https://leetcode.com/explore/interview/card/leetcodes-interview-crash-course-data-structures-and-algorithms/703/arraystrings/4501/", type = "article" }
+                    new { title = "Two Pointers Pattern - LeetCode", url = "https://leetcode.com/explore/interview/card/leetcodes-interview-crash-course-data-structures-and-algorithms/703/arraystrings/4501/", type = "article" },
+                    new { title = "Two Pointers - TakeUForward", url = "https://takeuforward.org/data-structure/two-pointers-technique/", type = "article" },
+                    new { title = "Two Pointers Tutorial - GeeksforGeeks", url = "https://www.geeksforgeeks.org/two-pointers-technique/", type = "article" },
+                    new { title = "Two Pointers Problems - LeetCode", url = "https://leetcode.com/tag/two-pointers/", type = "practice" },
+                    new { title = "Two Pointers Explained - Abdul Bari", url = "https://www.youtube.com/watch?v=On03HWe2tZM", type = "video" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -160,25 +174,40 @@ The window typically tracks a running state (sum, count, set of characters) that
                 commonUseCases: ToJson(new[] { "Longest substring without repeats", "Minimum window substring", "Maximum sum subarray of size k", "Find all anagrams", "Longest subarray with sum ≤ k" }),
                 timeComplexity: "O(n)",
                 spaceComplexity: "O(k) where k is window size or character set",
-                pseudoCode: @"left = 0
-window_state = initial_state
+                pseudoCode: @"SLIDING WINDOW ALGORITHM (Variable Size)
 
-for right in range(len(arr)):
-    # Expand window
-    update_state(arr[right])
-    
-    # Contract window while invalid
-    while window_invalid():
-        remove_from_state(arr[left])
-        left += 1
-    
-    # Update result
-    result = max(result, right - left + 1)",
+1. INITIALIZE:
+   - left pointer = 0
+   - window_state = empty (could be sum, count, hash map, etc.)
+   - result = initial value (0, infinity, empty, depending on min/max)
+
+2. FOR each position (right) from 0 to n-1:
+   a. EXPAND: Add element at right to window_state
+
+   b. SHRINK: While the window is invalid (violates constraint):
+      - Remove element at left from window_state
+      - Move left pointer forward (left++)
+
+   c. UPDATE: If current window is valid:
+      - Update result if this window is better (longer/shorter/etc.)
+
+3. RETURN result
+
+KEY INSIGHT: Each element enters the window once (when right moves)
+and leaves once (when left moves), giving O(n) total operations.
+
+FOR FIXED SIZE K:
+- Same structure, but shrink when window size exceeds k
+- Condition becomes: (right - left + 1) > k",
                 triggerSignals: ToJson(new[] { "Contiguous subarray/substring", "Maximum/minimum length", "Fixed window size k", "Substring containing all characters", "At most k distinct" }),
                 commonMistakes: ToJson(new[] { "Forgetting to shrink window when needed", "Not handling empty window case", "Off-by-one in window size calculation", "Incorrect state update when elements leave window" }),
                 resources: ToJson(new object[] {
                     new { title = "Sliding Window - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/1", type = "course" },
-                    new { title = "Sliding Window for Beginners", url = "https://leetcode.com/discuss/general-discussion/657507/sliding-window-for-beginners-problems-template-sample-solutions", type = "article" }
+                    new { title = "Sliding Window for Beginners", url = "https://leetcode.com/discuss/general-discussion/657507/sliding-window-for-beginners-problems-template-sample-solutions", type = "article" },
+                    new { title = "Sliding Window - TakeUForward", url = "https://takeuforward.org/data-structure/sliding-window-technique/", type = "article" },
+                    new { title = "Sliding Window - GeeksforGeeks", url = "https://www.geeksforgeeks.org/window-sliding-technique/", type = "article" },
+                    new { title = "Sliding Window Problems - LeetCode", url = "https://leetcode.com/tag/sliding-window/", type = "practice" },
+                    new { title = "Sliding Window - Aditya Verma", url = "https://www.youtube.com/playlist?list=PL_z_8CaSLPWeM8BDJmIYDnRPQgNPnGvJv", type = "video" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -206,25 +235,46 @@ Key insight: If the search space has a monotonic property, binary search applies
                 commonUseCases: ToJson(new[] { "Search in sorted array", "Find first/last position", "Search in rotated array", "Koko eating bananas", "Capacity to ship packages", "Square root" }),
                 timeComplexity: "O(log n)",
                 spaceComplexity: "O(1) iterative, O(log n) recursive",
-                pseudoCode: @"def binary_search(arr, target):
-    left, right = 0, len(arr) - 1
-    
-    while left <= right:
-        mid = left + (right - left) // 2
-        
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-    
-    return -1  # or left for insertion point",
+                pseudoCode: @"BINARY SEARCH ALGORITHM
+
+1. INITIALIZE:
+   - left = 0 (first index)
+   - right = n - 1 (last index)
+
+2. WHILE left ≤ right:
+   a. CALCULATE middle index:
+      mid = left + (right - left) / 2
+      [Note: This avoids integer overflow vs (left + right) / 2]
+
+   b. COMPARE element at mid with target:
+      - IF arr[mid] == target: Found! Return mid
+      - IF arr[mid] < target: Search right half (left = mid + 1)
+      - IF arr[mid] > target: Search left half (right = mid - 1)
+
+3. RETURN -1 (not found) or left (insertion point)
+
+VARIATIONS:
+
+Find First Occurrence:
+- When arr[mid] == target, set right = mid - 1 and continue
+- Return left if arr[left] == target
+
+Find Last Occurrence:
+- When arr[mid] == target, set left = mid + 1 and continue
+- Return right if arr[right] == target
+
+Binary Search on Answer Space:
+- Define condition function: canAchieve(value)
+- Search for minimum/maximum value where condition is true",
                 triggerSignals: ToJson(new[] { "Sorted array", "Find minimum/maximum that satisfies condition", "Search space with clear bounds", "Minimize maximum or maximize minimum", "O(log n) requirement" }),
                 commonMistakes: ToJson(new[] { "Integer overflow in mid calculation", "Wrong boundary update (mid vs mid±1)", "Incorrect loop condition (< vs <=)", "Not handling empty array", "Off-by-one in result" }),
                 resources: ToJson(new object[] {
                     new { title = "Binary Search - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/2", type = "course" },
-                    new { title = "Binary Search 101", url = "https://leetcode.com/problems/binary-search/solutions/423162/Binary-Search-101/", type = "article" }
+                    new { title = "Binary Search 101", url = "https://leetcode.com/problems/binary-search/solutions/423162/Binary-Search-101/", type = "article" },
+                    new { title = "Binary Search - TakeUForward", url = "https://takeuforward.org/data-structure/binary-search-explained/", type = "article" },
+                    new { title = "Binary Search - GeeksforGeeks", url = "https://www.geeksforgeeks.org/binary-search/", type = "article" },
+                    new { title = "Binary Search Problems - LeetCode", url = "https://leetcode.com/tag/binary-search/", type = "practice" },
+                    new { title = "Binary Search - Errichto", url = "https://www.youtube.com/watch?v=GU7DpgHINWQ", type = "video" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -252,19 +302,43 @@ Key insight: If the search space has a monotonic property, binary search applies
                 commonUseCases: ToJson(new[] { "Number of islands", "Path sum in tree", "Clone graph", "Course schedule", "Word search", "Generate permutations" }),
                 timeComplexity: "O(V + E) for graphs, O(n) for trees",
                 spaceComplexity: "O(h) where h is height/depth",
-                pseudoCode: @"def dfs(node, visited):
-    if node is None or node in visited:
-        return
-    
-    visited.add(node)
-    # Process node
-    
-    for neighbor in node.neighbors:
-        dfs(neighbor, visited)",
+                pseudoCode: @"DEPTH-FIRST SEARCH (DFS) ALGORITHM
+
+RECURSIVE VERSION:
+1. BASE CASE: If node is null or already visited, return
+2. Mark current node as visited
+3. Process current node (depends on problem)
+4. FOR each neighbor of current node:
+   - Recursively call DFS on neighbor
+
+ITERATIVE VERSION (using explicit stack):
+1. INITIALIZE:
+   - Push start node onto stack
+   - Create empty visited set
+
+2. WHILE stack is not empty:
+   a. Pop node from stack
+   b. IF node already visited, skip it
+   c. Mark node as visited
+   d. Process node
+   e. Push all unvisited neighbors onto stack
+
+TREE TRAVERSAL ORDERS:
+- Preorder: Process node BEFORE children
+- Inorder: Process node BETWEEN children (binary trees)
+- Postorder: Process node AFTER children
+
+KEY INSIGHT: DFS naturally handles backtracking - when recursion
+returns (or we pop from stack), we 'backtrack' to previous state.",
                 triggerSignals: ToJson(new[] { "Explore all paths", "Connected components", "Tree traversal", "Detect cycle", "Path exists", "Generate combinations" }),
                 commonMistakes: ToJson(new[] { "Forgetting to mark visited", "Not handling cycles in graphs", "Wrong base case", "Stack overflow on deep recursion", "Modifying collection while iterating" }),
                 resources: ToJson(new object[] {
-                    new { title = "Graph DFS - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/7", type = "course" }
+                    new { title = "Graph DFS - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/7", type = "course" },
+                    new { title = "DFS - TakeUForward", url = "https://takeuforward.org/data-structure/depth-first-search-dfs/", type = "article" },
+                    new { title = "DFS - GeeksforGeeks", url = "https://www.geeksforgeeks.org/depth-first-search-or-dfs-for-a-graph/", type = "article" },
+                    new { title = "DFS Problems - LeetCode", url = "https://leetcode.com/tag/depth-first-search/", type = "practice" },
+                    new { title = "DFS Tutorial - William Fiset", url = "https://www.youtube.com/watch?v=7fujbpJ0LB4", type = "video" },
+                    new { title = "DFS Visualizer - VisuAlgo", url = "https://visualgo.net/en/dfsbfs", type = "visualization" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -291,27 +365,43 @@ Key insight: If the search space has a monotonic property, binary search applies
                 commonUseCases: ToJson(new[] { "Shortest path in maze", "Level order traversal", "Rotting oranges", "Word ladder", "Minimum knight moves", "Nearest exit in maze" }),
                 timeComplexity: "O(V + E) for graphs, O(n) for trees",
                 spaceComplexity: "O(V) for the queue",
-                pseudoCode: @"from collections import deque
+                pseudoCode: @"BREADTH-FIRST SEARCH (BFS) ALGORITHM
 
-def bfs(start):
-    queue = deque([start])
-    visited = {start}
-    level = 0
-    
-    while queue:
-        for _ in range(len(queue)):  # Process current level
-            node = queue.popleft()
-            # Process node
-            
-            for neighbor in node.neighbors:
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append(neighbor)
-        level += 1",
+1. INITIALIZE:
+   - Create a queue and add the start node
+   - Create a visited set and mark start as visited
+   - Set level/distance = 0
+
+2. WHILE queue is not empty:
+   a. Get the number of nodes at current level (queue size)
+
+   b. FOR each node at current level:
+      - Remove node from front of queue
+      - Process node (check if goal, record result, etc.)
+      - FOR each neighbor of node:
+        - IF neighbor not visited:
+          - Mark neighbor as visited
+          - Add neighbor to back of queue
+
+   c. INCREMENT level/distance counter
+
+3. RETURN result (path length, reachable nodes, etc.)
+
+MULTI-SOURCE BFS:
+- Start by adding ALL source nodes to queue
+- Useful for problems like 'rotting oranges' or 'walls and gates'
+
+KEY INSIGHT: BFS guarantees shortest path in unweighted graphs
+because it explores all nodes at distance d before distance d+1.",
                 triggerSignals: ToJson(new[] { "Shortest path unweighted", "Minimum steps/moves", "Level-order traversal", "Nearest/closest", "Spreading/infection simulation" }),
                 commonMistakes: ToJson(new[] { "Using DFS for shortest path", "Not tracking visited before enqueueing", "Processing level boundaries incorrectly", "Forgetting to handle disconnected components" }),
                 resources: ToJson(new object[] {
-                    new { title = "Graph BFS - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/8", type = "course" }
+                    new { title = "Graph BFS - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/8", type = "course" },
+                    new { title = "BFS - TakeUForward", url = "https://takeuforward.org/data-structure/breadth-first-search-bfs-level-order-traversal/", type = "article" },
+                    new { title = "BFS - GeeksforGeeks", url = "https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/", type = "article" },
+                    new { title = "BFS Problems - LeetCode", url = "https://leetcode.com/tag/breadth-first-search/", type = "practice" },
+                    new { title = "BFS Tutorial - William Fiset", url = "https://www.youtube.com/watch?v=oDqjPvD54Ss", type = "video" },
+                    new { title = "BFS Visualizer - VisuAlgo", url = "https://visualgo.net/en/dfsbfs", type = "visualization" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -338,21 +428,49 @@ Two approaches: Top-down (memoization) and Bottom-up (tabulation).",
                 commonUseCases: ToJson(new[] { "Fibonacci", "Climbing stairs", "House robber", "Longest common subsequence", "Knapsack", "Edit distance", "Coin change" }),
                 timeComplexity: "Varies: O(n), O(n²), O(n×m), etc.",
                 spaceComplexity: "O(n) to O(n×m), often reducible",
-                pseudoCode: @"# Bottom-up approach
-def dp_solution(n):
-    dp = [0] * (n + 1)
-    dp[0] = base_case_0
-    dp[1] = base_case_1
-    
-    for i in range(2, n + 1):
-        dp[i] = recurrence_relation(dp[i-1], dp[i-2], ...)
-    
-    return dp[n]",
+                pseudoCode: @"DYNAMIC PROGRAMMING ALGORITHM
+
+STEP 1: Define the State
+- What does dp[i] or dp[i][j] represent?
+- State should capture all information needed for decisions
+
+STEP 2: Identify Base Cases
+- What are the smallest subproblems with known answers?
+- Examples: dp[0] = 0, dp[1] = 1, empty string = 0
+
+STEP 3: Find the Recurrence Relation
+- How does dp[i] relate to smaller subproblems?
+- Consider all possible last choices/transitions
+
+STEP 4: Determine Computation Order
+- Bottom-up: Compute smaller subproblems first
+- Top-down: Use memoization with recursion
+
+BOTTOM-UP APPROACH:
+1. Create dp array of appropriate size
+2. Initialize base cases
+3. FOR i from (base case + 1) to n:
+   - Compute dp[i] using recurrence relation
+4. Return dp[n]
+
+TOP-DOWN APPROACH (Memoization):
+1. Create memo dictionary/array
+2. Define recursive function with memo lookup
+3. IF state in memo, return cached result
+4. Compute result recursively
+5. Store in memo before returning
+
+SPACE OPTIMIZATION: If dp[i] only depends on previous k states,
+use rolling array of size k instead of full array.",
                 triggerSignals: ToJson(new[] { "Count number of ways", "Minimum/maximum value", "Can you reach target?", "Longest/shortest sequence", "Make choices at each step", "Optimal decision sequence" }),
                 commonMistakes: ToJson(new[] { "Wrong base case", "Incorrect recurrence relation", "Not considering all transitions", "Index out of bounds", "Not optimizing space when possible" }),
                 resources: ToJson(new object[] {
                     new { title = "DP - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/5", type = "course" },
-                    new { title = "DP Patterns", url = "https://leetcode.com/discuss/general-discussion/458695/dynamic-programming-patterns", type = "article" }
+                    new { title = "DP Patterns", url = "https://leetcode.com/discuss/general-discussion/458695/dynamic-programming-patterns", type = "article" },
+                    new { title = "DP - TakeUForward", url = "https://takeuforward.org/dynamic-programming/striver-dp-series-dynamic-programming-problems/", type = "article" },
+                    new { title = "DP Playlist - Aditya Verma", url = "https://www.youtube.com/playlist?list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go", type = "video" },
+                    new { title = "DP Problems - LeetCode", url = "https://leetcode.com/tag/dynamic-programming/", type = "practice" },
+                    new { title = "DP - GeeksforGeeks", url = "https://www.geeksforgeeks.org/dynamic-programming/", type = "article" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -380,20 +498,46 @@ It's essentially DFS on the decision tree with pruning.",
                 commonUseCases: ToJson(new[] { "N-Queens", "Sudoku solver", "Generate permutations", "Combination sum", "Word search", "Palindrome partitioning" }),
                 timeComplexity: "Often O(n!) or O(2^n) - exponential",
                 spaceComplexity: "O(n) for recursion depth",
-                pseudoCode: @"def backtrack(path, choices):
-    if is_solution(path):
-        result.append(path.copy())
-        return
-    
-    for choice in choices:
-        if is_valid(choice):
-            path.append(choice)      # Make choice
-            backtrack(path, remaining_choices)
-            path.pop()               # Undo choice",
+                pseudoCode: @"BACKTRACKING ALGORITHM
+
+1. DEFINE the recursive backtrack function:
+   backtrack(current_state, choices_remaining)
+
+2. BASE CASE - Check if current state is a complete solution:
+   - IF is_solution(current_state):
+     - Add copy of current_state to results
+     - Return
+
+3. FOR each choice in available choices:
+   a. CHECK if choice is valid (pruning):
+      - Skip invalid choices early to save time
+
+   b. MAKE the choice:
+      - Add choice to current_state
+      - Update any tracking variables
+
+   c. RECURSE:
+      - Call backtrack with updated state
+
+   d. UNDO the choice (backtrack):
+      - Remove choice from current_state
+      - Restore tracking variables to previous values
+
+KEY INSIGHT: The 'undo' step is what makes it backtracking.
+We explore one path completely, then backtrack to try alternatives.
+
+PRUNING STRATEGIES:
+- Skip choices that violate constraints
+- Skip choices that can't lead to better solutions
+- Use sorting to enable early termination",
                 triggerSignals: ToJson(new[] { "Generate all permutations/combinations", "Find all solutions", "Constraint satisfaction", "Explore decision tree", "Can't use DP (no overlapping subproblems)" }),
                 commonMistakes: ToJson(new[] { "Forgetting to backtrack (undo choice)", "Not copying path when saving solution", "Inefficient pruning", "Wrong base case", "Duplicate solutions due to order" }),
                 resources: ToJson(new object[] {
-                    new { title = "Backtracking - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/6", type = "course" }
+                    new { title = "Backtracking - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/6", type = "course" },
+                    new { title = "Backtracking - TakeUForward", url = "https://takeuforward.org/data-structure/recursion-and-backtracking/", type = "article" },
+                    new { title = "Backtracking - GeeksforGeeks", url = "https://www.geeksforgeeks.org/backtracking-algorithms/", type = "article" },
+                    new { title = "Backtracking Problems - LeetCode", url = "https://leetcode.com/tag/backtracking/", type = "practice" },
+                    new { title = "Recursion & Backtracking - Abdul Bari", url = "https://www.youtube.com/watch?v=DKCbsiDBN6c", type = "video" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -422,23 +566,45 @@ Python's heapq is a min-heap; negate values for max-heap behavior.",
                 commonUseCases: ToJson(new[] { "Kth largest element", "Merge k sorted lists", "Find median from stream", "Task scheduler", "Top k frequent elements", "Meeting rooms" }),
                 timeComplexity: "O(log n) per operation, O(n log k) for k elements",
                 spaceComplexity: "O(n) or O(k)",
-                pseudoCode: @"import heapq
+                pseudoCode: @"HEAP / PRIORITY QUEUE ALGORITHM
 
-# Min heap
-heap = []
-heapq.heappush(heap, value)
-min_val = heapq.heappop(heap)
+HEAP OPERATIONS:
+- INSERT: Add element, bubble up to maintain heap property - O(log n)
+- EXTRACT-MIN/MAX: Remove root, replace with last, bubble down - O(log n)
+- PEEK: Return root element without removing - O(1)
+- HEAPIFY: Convert array to heap - O(n)
 
-# Max heap (negate values)
-heapq.heappush(heap, -value)
-max_val = -heapq.heappop(heap)
+MIN-HEAP PROPERTY: Parent ≤ both children
+MAX-HEAP PROPERTY: Parent ≥ both children
 
-# Heapify list
-heapq.heapify(list)  # O(n)",
+COMMON PATTERNS:
+
+1. K-th Largest/Smallest:
+   - Use min-heap of size k for k-th largest
+   - Use max-heap of size k for k-th smallest
+   - Maintain heap size; root is the answer
+
+2. Merge K Sorted Lists:
+   - Add first element of each list to heap
+   - Extract minimum, add next element from that list
+   - Repeat until heap is empty
+
+3. Top K Frequent:
+   - Count frequencies
+   - Use heap to get top k by frequency
+
+4. Two Heaps for Median:
+   - Max-heap for lower half
+   - Min-heap for upper half
+   - Balance sizes; median is at/between roots",
                 triggerSignals: ToJson(new[] { "Kth largest/smallest", "Merge k sorted", "Continuously find min/max", "Top k elements", "Schedule by priority", "Median maintenance" }),
                 commonMistakes: ToJson(new[] { "Using wrong heap type (min vs max)", "Forgetting to negate for max-heap in Python", "Not handling equal elements correctly", "Inefficient: sorting when heap suffices" }),
                 resources: ToJson(new object[] {
-                    new { title = "Heaps - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/3", type = "course" }
+                    new { title = "Heaps - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/3", type = "course" },
+                    new { title = "Heaps - TakeUForward", url = "https://takeuforward.org/data-structure/heap-priority-queue/", type = "article" },
+                    new { title = "Heaps - GeeksforGeeks", url = "https://www.geeksforgeeks.org/heap-data-structure/", type = "article" },
+                    new { title = "Heap Problems - LeetCode", url = "https://leetcode.com/tag/heap-priority-queue/", type = "practice" },
+                    new { title = "Heaps - William Fiset", url = "https://www.youtube.com/watch?v=t0Cq6tVNRBA", type = "video" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -466,20 +632,42 @@ Not all problems have greedy solutions - proof or intuition needed.",
                 commonUseCases: ToJson(new[] { "Activity selection", "Jump game", "Gas station", "Assign cookies", "Non-overlapping intervals", "Partition labels" }),
                 timeComplexity: "Usually O(n log n) due to sorting, or O(n)",
                 spaceComplexity: "Usually O(1) to O(n)",
-                pseudoCode: @"def greedy_solution(items):
-    # Often sort first
-    items.sort(by=some_criteria)
-    
-    result = initial_value
-    for item in items:
-        if can_include(item):
-            result = update_result(result, item)
-    
-    return result",
+                pseudoCode: @"GREEDY ALGORITHM
+
+GENERAL FRAMEWORK:
+1. IDENTIFY the greedy choice property:
+   - What locally optimal choice leads to global optimum?
+
+2. SORT (often required):
+   - By start time, end time, ratio, value, etc.
+   - Sorting order depends on the greedy strategy
+
+3. ITERATE and make greedy choices:
+   FOR each item (in sorted order):
+      IF item can be included (doesn't violate constraints):
+         Include item in solution
+         Update current state
+
+4. RETURN result
+
+PROVING GREEDY WORKS:
+- Greedy Choice Property: Local optimum leads to global optimum
+- Optimal Substructure: Optimal solution contains optimal sub-solutions
+- Exchange Argument: Show any other choice can be 'exchanged' without loss
+
+COMMON GREEDY STRATEGIES:
+- Activity Selection: Sort by end time, pick non-overlapping
+- Fractional Knapsack: Sort by value/weight ratio
+- Huffman Coding: Always merge two smallest frequencies
+- Interval Scheduling: Various sorting criteria based on goal",
                 triggerSignals: ToJson(new[] { "Maximize/minimize with constraints", "Interval problems", "Choose items with cost/value", "Local decision doesn't affect future options", "Sorting might help" }),
                 commonMistakes: ToJson(new[] { "Applying greedy when DP is needed", "Wrong sorting criteria", "Not proving greedy works", "Missing edge cases", "Not considering ties properly" }),
                 resources: ToJson(new object[] {
-                    new { title = "Greedy Algorithms", url = "https://www.geeksforgeeks.org/greedy-algorithms/", type = "article" }
+                    new { title = "Greedy Algorithms", url = "https://www.geeksforgeeks.org/greedy-algorithms/", type = "article" },
+                    new { title = "Greedy - TakeUForward", url = "https://takeuforward.org/data-structure/greedy-algorithms/", type = "article" },
+                    new { title = "Greedy - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/14", type = "course" },
+                    new { title = "Greedy Problems - LeetCode", url = "https://leetcode.com/tag/greedy/", type = "practice" },
+                    new { title = "Greedy - Abdul Bari", url = "https://www.youtube.com/watch?v=ARvQcqJ_-NY", type = "video" }
                 }),
                 relatedPatternIds: ToJson(Array.Empty<Guid>())
             ),
@@ -502,19 +690,34 @@ Not all problems have greedy solutions - proof or intuition needed.",
                 commonUseCases: ToJson(new[] { "Next greater element", "Daily temperatures", "Largest rectangle in histogram", "Trapping rain water", "Stock span problem", "Sum of subarray minimums" }),
                 timeComplexity: "O(n) - each element pushed/popped once",
                 spaceComplexity: "O(n)",
-                pseudoCode: @"def next_greater_elements(nums):
-    n = len(nums)
-    result = [-1] * n
-    stack = []  # Stores indices
-    
-    for i in range(n):
-        # Pop elements smaller than current
-        while stack and nums[i] > nums[stack[-1]]:
-            idx = stack.pop()
-            result[idx] = nums[i]  # Found next greater
-        stack.append(i)
-    
-    return result",
+                pseudoCode: @"MONOTONIC STACK ALGORITHM
+
+PURPOSE: Efficiently find next/previous greater/smaller elements
+
+MONOTONIC INCREASING STACK (for Next Greater Element):
+1. Initialize empty stack and result array (fill with -1)
+2. FOR each index i from 0 to n-1:
+   a. WHILE stack not empty AND current > element at stack top:
+      - Pop index from stack
+      - The current element is the 'next greater' for popped index
+      - Record in result array
+   b. Push current index onto stack
+3. Remaining indices in stack have no next greater element
+
+MONOTONIC DECREASING STACK (for Next Smaller Element):
+- Same logic but pop when current < stack top element
+
+KEY VARIATIONS:
+- Next Greater: Iterate left to right, pop when current > top
+- Previous Greater: Iterate left to right, answer is current stack top
+- Next Smaller: Iterate left to right, pop when current < top
+- Previous Smaller: Iterate left to right, answer is current stack top
+
+COMMON APPLICATIONS:
+- Stock span problems
+- Largest rectangle in histogram
+- Trapping rain water
+- Daily temperatures",
                 triggerSignals: ToJson(new[] { "Next greater/smaller element", "Previous greater/smaller", "Span problems", "Histogram rectangle", "Temperature/stock problems", "Subarray min/max sums" }),
                 commonMistakes: ToJson(new[] { "Wrong monotonic direction (increasing vs decreasing)", "Storing values instead of indices when indices needed", "Not handling remaining elements in stack", "Off-by-one errors" }),
                 resources: ToJson(new object[] {
@@ -546,26 +749,37 @@ With path compression and union by rank, both operations are nearly O(1) (amorti
                 commonUseCases: ToJson(new[] { "Number of connected components", "Redundant connection", "Accounts merge", "Longest consecutive sequence", "Making a large island", "Satisfiability of equality equations" }),
                 timeComplexity: "O(α(n)) ≈ O(1) per operation",
                 spaceComplexity: "O(n)",
-                pseudoCode: @"class UnionFind:
-    def __init__(self, n):
-        self.parent = list(range(n))
-        self.rank = [0] * n
-    
-    def find(self, x):
-        if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])  # Path compression
-        return self.parent[x]
-    
-    def union(self, x, y):
-        px, py = self.find(x), self.find(y)
-        if px == py:
-            return False
-        if self.rank[px] < self.rank[py]:
-            px, py = py, px
-        self.parent[py] = px
-        if self.rank[px] == self.rank[py]:
-            self.rank[px] += 1
-        return True",
+                pseudoCode: @"UNION-FIND (DISJOINT SET UNION) ALGORITHM
+
+DATA STRUCTURE:
+- parent[]: Each element points to its parent (or itself if root)
+- rank[]: Height/size of each tree (for optimization)
+
+FIND OPERATION (with path compression):
+1. IF element is its own parent, it's the root - return it
+2. OTHERWISE, recursively find root of parent
+3. PATH COMPRESSION: Point element directly to root
+4. Return the root
+
+UNION OPERATION (with union by rank):
+1. Find roots of both elements
+2. IF same root, already connected - return false
+3. ATTACH smaller tree under larger tree:
+   - Compare ranks of both roots
+   - Make higher-rank root the parent
+   - If equal rank, pick one and increment its rank
+4. Return true (union performed)
+
+OPTIMIZATIONS:
+- Path Compression: Flattens tree during find
+- Union by Rank/Size: Keeps trees balanced
+- Together: Nearly O(1) amortized per operation
+
+APPLICATIONS:
+- Connected components
+- Cycle detection in undirected graphs
+- Kruskal's MST algorithm
+- Account merging / grouping problems",
                 triggerSignals: ToJson(new[] { "Connected components", "Group membership", "Merge groups", "Dynamic connectivity", "Cycle detection undirected graph" }),
                 commonMistakes: ToJson(new[] { "Forgetting path compression", "Not using union by rank", "Incorrect parent initialization", "Not handling self-loops" }),
                 resources: ToJson(new object[] {
@@ -593,29 +807,37 @@ With path compression and union by rank, both operations are nearly O(1) (amorti
                 commonUseCases: ToJson(new[] { "Implement Trie", "Word search II", "Search suggestions system", "Design add and search words", "Replace words", "Palindrome pairs" }),
                 timeComplexity: "O(m) per operation where m is word length",
                 spaceComplexity: "O(total characters in all words)",
-                pseudoCode: @"class TrieNode:
-    def __init__(self):
-        self.children = {}
-        self.is_end = False
+                pseudoCode: @"TRIE (PREFIX TREE) ALGORITHM
 
-class Trie:
-    def __init__(self):
-        self.root = TrieNode()
-    
-    def insert(self, word):
-        node = self.root
-        for char in word:
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            node = node.children[char]
-        node.is_end = True
-    
-    def search(self, word):
-        node = self._traverse(word)
-        return node is not None and node.is_end
-    
-    def starts_with(self, prefix):
-        return self._traverse(prefix) is not None",
+DATA STRUCTURE:
+- Each node contains:
+  - children: Map/array of child nodes (one per character)
+  - isEndOfWord: Boolean flag marking complete words
+
+INSERT OPERATION:
+1. Start at root node
+2. FOR each character in word:
+   a. IF child for character doesn't exist:
+      - Create new node for character
+   b. Move to child node
+3. Mark final node as end of word
+
+SEARCH OPERATION:
+1. Start at root node
+2. FOR each character in word:
+   a. IF child for character doesn't exist:
+      - Return false (word not found)
+   b. Move to child node
+3. Return true only if final node is marked as end of word
+
+STARTS-WITH (PREFIX) OPERATION:
+1. Same as search, but return true after traversing all chars
+   (don't check isEndOfWord flag)
+
+DELETE OPERATION:
+1. Recursively traverse to end of word
+2. Unmark end of word
+3. Delete nodes that have no other children (bottom-up)",
                 triggerSignals: ToJson(new[] { "Prefix search", "Autocomplete", "Word dictionary", "Multiple string search", "Common prefix operations" }),
                 commonMistakes: ToJson(new[] { "Forgetting is_end flag", "Not handling empty strings", "Memory inefficiency with sparse tries", "Case sensitivity issues" }),
                 resources: ToJson(new object[] {
@@ -649,17 +871,29 @@ Key technique: Sort by start (or end) time, then process linearly.",
                 commonUseCases: ToJson(new[] { "Merge intervals", "Insert interval", "Meeting rooms", "Non-overlapping intervals", "Minimum number of arrows", "Employee free time" }),
                 timeComplexity: "O(n log n) due to sorting",
                 spaceComplexity: "O(n) for result, O(1) extra",
-                pseudoCode: @"def merge_intervals(intervals):
-    intervals.sort(key=lambda x: x[0])
-    result = [intervals[0]]
+                pseudoCode: @"INTERVAL MERGING ALGORITHM
 
-    for start, end in intervals[1:]:
-        if start <= result[-1][1]:  # Overlaps
-            result[-1][1] = max(result[-1][1], end)
-        else:
-            result.append([start, end])
+1. SORT intervals by start time (ascending)
 
-    return result",
+2. INITIALIZE result with first interval
+
+3. FOR each remaining interval [start, end]:
+   a. Get last interval in result: [lastStart, lastEnd]
+   b. IF start ≤ lastEnd (overlaps or touches):
+      - MERGE: Update lastEnd = max(lastEnd, end)
+   c. ELSE (gap exists):
+      - ADD [start, end] as new interval to result
+
+4. RETURN merged intervals
+
+CHECKING OVERLAP:
+Two intervals [a,b] and [c,d] overlap if: a ≤ d AND c ≤ b
+
+COMMON VARIATIONS:
+- Insert Interval: Binary search for position, then merge
+- Meeting Rooms: Sort by start, check any overlap exists
+- Meeting Rooms II: Use min-heap to track end times, or sweep line
+- Non-overlapping: Greedy by end time, count removals needed",
                 triggerSignals: ToJson(new[] { "Time ranges", "Overlapping intervals", "Merge ranges", "Meeting scheduling", "Booking conflicts", "Minimum operations on ranges" }),
                 commonMistakes: ToJson(new[] { "Wrong sort key", "Not handling touching intervals correctly", "Off-by-one with inclusive/exclusive bounds", "Not merging all overlaps" }),
                 resources: ToJson(new object[] {
@@ -692,28 +926,34 @@ Three steps:
                 commonUseCases: ToJson(new[] { "Merge Sort", "Quick Sort", "Binary Search", "Maximum subarray (Kadane)", "Closest pair of points", "Strassen's matrix multiplication", "Karatsuba multiplication" }),
                 timeComplexity: "Varies: O(n log n) for sorting, O(log n) for search",
                 spaceComplexity: "O(log n) to O(n) for recursion stack",
-                pseudoCode: @"def divide_and_conquer(problem):
-    # Base case
-    if is_base_case(problem):
-        return solve_directly(problem)
+                pseudoCode: @"DIVIDE AND CONQUER ALGORITHM
 
-    # Divide
-    subproblems = divide(problem)
+GENERAL FRAMEWORK:
+1. BASE CASE: If problem is small enough, solve directly
 
-    # Conquer
-    subsolutions = [divide_and_conquer(sub) for sub in subproblems]
+2. DIVIDE: Split problem into smaller subproblems
+   - Typically divide in half (binary division)
+   - Subproblems should be independent
 
-    # Combine
-    return combine(subsolutions)
+3. CONQUER: Recursively solve each subproblem
+   - Apply same algorithm to each smaller problem
 
-# Merge Sort example
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr
-    mid = len(arr) // 2
-    left = merge_sort(arr[:mid])
-    right = merge_sort(arr[mid:])
-    return merge(left, right)",
+4. COMBINE: Merge subproblem solutions into final answer
+   - This step often determines overall complexity
+
+MERGE SORT EXAMPLE:
+1. Base: If array has ≤ 1 element, it's sorted
+2. Divide: Split array into two halves at midpoint
+3. Conquer: Recursively sort each half
+4. Combine: Merge two sorted halves into one sorted array
+   - Compare elements from both halves
+   - Take smaller element each time
+   - Results in O(n) merge, O(n log n) total
+
+MASTER THEOREM: T(n) = aT(n/b) + O(n^d)
+- a = number of subproblems
+- b = factor by which problem size shrinks
+- d = exponent in combine step",
                 triggerSignals: ToJson(new[] { "Problem can be halved", "Subproblems are independent", "Sorting algorithms", "Matrix operations", "Geometric algorithms" }),
                 commonMistakes: ToJson(new[] { "Wrong base case", "Inefficient combine step", "Not handling odd/even splits", "Stack overflow on deep recursion", "Using when DP is needed (overlapping subproblems)" }),
                 resources: ToJson(new object[] {
@@ -746,25 +986,33 @@ Only possible for DAGs - existence of topological order proves no cycles.",
                 commonUseCases: ToJson(new[] { "Course Schedule", "Alien Dictionary", "Build order", "Task scheduling", "Recipe steps", "Package dependencies" }),
                 timeComplexity: "O(V + E)",
                 spaceComplexity: "O(V) for result and auxiliary structures",
-                pseudoCode: @"# Kahn's Algorithm (BFS)
-def topological_sort(graph, num_nodes):
-    indegree = [0] * num_nodes
-    for u in graph:
-        for v in graph[u]:
-            indegree[v] += 1
+                pseudoCode: @"TOPOLOGICAL SORT ALGORITHMS
 
-    queue = deque([i for i in range(num_nodes) if indegree[i] == 0])
-    result = []
+KAHN'S ALGORITHM (BFS-based):
+1. CALCULATE in-degree for each node
+   (count of edges pointing TO each node)
 
-    while queue:
-        node = queue.popleft()
-        result.append(node)
-        for neighbor in graph[node]:
-            indegree[neighbor] -= 1
-            if indegree[neighbor] == 0:
-                queue.append(neighbor)
+2. ADD all nodes with in-degree 0 to queue
+   (these have no dependencies)
 
-    return result if len(result) == num_nodes else []  # Empty if cycle",
+3. WHILE queue is not empty:
+   a. Remove node from queue, add to result
+   b. FOR each neighbor of this node:
+      - Decrement neighbor's in-degree
+      - IF neighbor's in-degree becomes 0:
+        - Add neighbor to queue
+
+4. IF result contains all nodes: return result
+   ELSE: cycle exists (impossible to sort)
+
+DFS-BASED APPROACH:
+1. Do DFS, tracking visited and 'in current path'
+2. Add node to result AFTER processing all neighbors
+3. Reverse the result at the end
+4. If 'in current path' node visited again: cycle detected
+
+CYCLE DETECTION: If result length < number of nodes,
+a cycle exists and topological sort is impossible.",
                 triggerSignals: ToJson(new[] { "Dependencies/prerequisites", "Build order", "Course schedule", "DAG processing", "Cycle detection directed graph" }),
                 commonMistakes: ToJson(new[] { "Forgetting to check for cycles", "Wrong indegree calculation", "Not handling disconnected components", "Confusing with DFS/BFS traversal" }),
                 resources: ToJson(new object[] {
@@ -800,27 +1048,34 @@ Enables O(1) space solutions for certain problems.",
                 commonUseCases: ToJson(new[] { "Single Number", "Number of 1 Bits", "Power of Two", "Counting Bits", "Subsets generation", "Missing Number", "Reverse Bits" }),
                 timeComplexity: "O(1) to O(n) depending on problem",
                 spaceComplexity: "Often O(1)",
-                pseudoCode: @"# Common bit operations
-n & (n - 1)      # Clear lowest set bit
-n & (-n)         # Isolate lowest set bit
-n | (1 << i)     # Set bit at position i
-n & ~(1 << i)    # Clear bit at position i
-(n >> i) & 1     # Check bit at position i
+                pseudoCode: @"BIT MANIPULATION ALGORITHMS
 
-# Single Number (XOR all elements)
-def single_number(nums):
-    result = 0
-    for num in nums:
-        result ^= num
-    return result
+COMMON BIT OPERATIONS:
+- n AND (n-1): Clear the lowest set bit
+- n AND (-n): Isolate the lowest set bit
+- n OR (1 << i): Set bit at position i
+- n AND NOT(1 << i): Clear bit at position i
+- (n >> i) AND 1: Check if bit at position i is set
+- n XOR n = 0: XOR of same number is zero
+- n XOR 0 = n: XOR with zero preserves value
 
-# Count set bits
-def count_bits(n):
-    count = 0
-    while n:
-        n &= (n - 1)  # Clear lowest set bit
-        count += 1
-    return count",
+SINGLE NUMBER (find element appearing once):
+1. Initialize result = 0
+2. FOR each number in array:
+   result = result XOR number
+3. Return result
+(Pairs cancel out via XOR, unique remains)
+
+COUNT SET BITS (Brian Kernighan's Algorithm):
+1. Initialize count = 0
+2. WHILE n > 0:
+   n = n AND (n-1)  // Clears lowest set bit
+   count = count + 1
+3. Return count
+
+GENERATE ALL SUBSETS using bits:
+FOR mask from 0 to (2^n - 1):
+  Current subset includes element i if bit i of mask is set",
                 triggerSignals: ToJson(new[] { "Find unique/single number", "Power of 2", "Binary representation", "Subsets/combinations", "O(1) space requirement", "Toggle states" }),
                 commonMistakes: ToJson(new[] { "Sign bit issues with negative numbers", "Wrong shift direction", "Overflow in bit shifts", "Not handling zero case" }),
                 resources: ToJson(new object[] {
@@ -852,30 +1107,34 @@ Can be extended to 2D (prefix sum matrix) and other operations (product, XOR).",
                 commonUseCases: ToJson(new[] { "Range Sum Query", "Subarray Sum Equals K", "Contiguous Array", "Product of Array Except Self", "2D Range Sum", "Running sum" }),
                 timeComplexity: "O(n) precompute, O(1) query",
                 spaceComplexity: "O(n) for prefix array",
-                pseudoCode: @"# Build prefix sum
-def build_prefix(arr):
-    prefix = [0] * (len(arr) + 1)
-    for i in range(len(arr)):
-        prefix[i + 1] = prefix[i] + arr[i]
-    return prefix
+                pseudoCode: @"PREFIX SUM ALGORITHM
 
-# Range sum query [i, j] inclusive
-def range_sum(prefix, i, j):
-    return prefix[j + 1] - prefix[i]
+BUILDING PREFIX SUM ARRAY:
+1. Create array prefix of size n+1
+2. Set prefix[0] = 0
+3. FOR i from 0 to n-1:
+   prefix[i+1] = prefix[i] + arr[i]
 
-# Subarray sum equals k
-def subarray_sum(nums, k):
-    count = 0
-    prefix_sum = 0
-    seen = {0: 1}
+RANGE SUM QUERY [i, j]:
+- Return prefix[j+1] - prefix[i]
+- This gives sum of arr[i] through arr[j]
 
-    for num in nums:
-        prefix_sum += num
-        if prefix_sum - k in seen:
-            count += seen[prefix_sum - k]
-        seen[prefix_sum] = seen.get(prefix_sum, 0) + 1
+SUBARRAY SUM EQUALS K (using hash map):
+1. Initialize count = 0, current_sum = 0
+2. Create hash map seen = {0: 1}
+3. FOR each number in array:
+   a. Add number to current_sum
+   b. IF (current_sum - k) exists in seen:
+      - Add seen[current_sum - k] to count
+   c. Add current_sum to seen (increment count)
+4. Return count
 
-    return count",
+KEY INSIGHT: If prefix[j] - prefix[i] = k, then
+subarray from i to j-1 sums to k.
+
+2D PREFIX SUM:
+prefix[i][j] = sum of rectangle from (0,0) to (i-1,j-1)
+Region sum uses inclusion-exclusion principle",
                 triggerSignals: ToJson(new[] { "Range sum queries", "Subarray with target sum", "Cumulative operations", "Multiple queries on same array", "2D matrix region sums" }),
                 commonMistakes: ToJson(new[] { "Off-by-one in prefix indexing", "Not handling empty ranges", "Integer overflow with large sums", "Forgetting prefix[0] = 0" }),
                 resources: ToJson(new object[] {
@@ -908,38 +1167,33 @@ If there's a cycle, they'll meet. Also useful for finding middle of linked list 
                 commonUseCases: ToJson(new[] { "Linked List Cycle", "Linked List Cycle II", "Find Middle of List", "Happy Number", "Find Duplicate Number", "Palindrome Linked List" }),
                 timeComplexity: "O(n)",
                 spaceComplexity: "O(1)",
-                pseudoCode: @"# Detect cycle
-def has_cycle(head):
-    slow = fast = head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            return True
-    return False
+                pseudoCode: @"FAST AND SLOW POINTERS (FLOYD'S ALGORITHM)
 
-# Find cycle start
-def detect_cycle(head):
-    slow = fast = head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            # Find cycle start
-            slow = head
-            while slow != fast:
-                slow = slow.next
-                fast = fast.next
-            return slow
-    return None
+CYCLE DETECTION:
+1. Initialize slow and fast pointers at head
+2. WHILE fast is not null AND fast.next is not null:
+   a. Move slow one step forward
+   b. Move fast two steps forward
+   c. IF slow == fast: cycle detected, return true
+3. If loop ends, no cycle - return false
 
-# Find middle
-def find_middle(head):
-    slow = fast = head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-    return slow",
+FIND CYCLE START (after detecting cycle):
+1. After slow and fast meet, reset slow to head
+2. Move both pointers one step at a time
+3. They will meet at the cycle start
+
+WHY THIS WORKS: When fast catches slow inside cycle,
+the distance from head to cycle start equals distance
+from meeting point to cycle start (going around cycle).
+
+FIND MIDDLE OF LIST:
+1. Initialize slow and fast at head
+2. WHILE fast is not null AND fast.next is not null:
+   - Move slow one step
+   - Move fast two steps
+3. When fast reaches end, slow is at middle
+
+For even-length lists, this gives the second middle node.",
                 triggerSignals: ToJson(new[] { "Cycle detection", "Find middle element", "Linked list loop", "Sequence repeats", "O(1) space with linked list" }),
                 commonMistakes: ToJson(new[] { "Not checking fast.next before fast.next.next", "Wrong initialization", "Not handling empty list", "Confusing cycle detection with finding cycle start" }),
                 resources: ToJson(new object[] {
@@ -975,35 +1229,37 @@ Key: direction arrays simplify code.",
                 commonUseCases: ToJson(new[] { "Number of Islands", "Flood Fill", "Rotting Oranges", "Word Search", "Spiral Matrix", "Diagonal Traverse", "Shortest Path in Grid" }),
                 timeComplexity: "O(m × n) to visit all cells",
                 spaceComplexity: "O(m × n) for visited array or O(min(m,n)) for BFS queue",
-                pseudoCode: @"# Direction arrays
-directions_4 = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-directions_8 = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
+                pseudoCode: @"MATRIX TRAVERSAL ALGORITHMS
 
-# BFS on grid
-def bfs_grid(grid, start):
-    rows, cols = len(grid), len(grid[0])
-    queue = deque([start])
-    visited = {start}
+DIRECTION ARRAYS:
+- 4 directions: (0,1), (0,-1), (1,0), (-1,0) [right, left, down, up]
+- 8 directions: Add diagonals (-1,-1), (-1,1), (1,-1), (1,1)
 
-    while queue:
-        r, c = queue.popleft()
-        for dr, dc in directions_4:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols:
-                if (nr, nc) not in visited and grid[nr][nc] == valid:
-                    visited.add((nr, nc))
-                    queue.append((nr, nc))
+BFS ON GRID (for shortest path):
+1. Initialize queue with starting position
+2. Mark start as visited
+3. WHILE queue not empty:
+   a. Remove position (row, col) from queue
+   b. FOR each direction (dr, dc):
+      - Calculate new position (nr, nc) = (row+dr, col+dc)
+      - IF in bounds AND not visited AND valid cell:
+        - Mark as visited
+        - Add to queue
 
-# Spiral traversal
-def spiral_order(matrix):
-    result = []
-    top, bottom = 0, len(matrix) - 1
-    left, right = 0, len(matrix[0]) - 1
+DFS ON GRID (for exploring regions):
+1. Mark current cell as visited
+2. FOR each valid neighbor:
+   - Recursively call DFS
 
-    while top <= bottom and left <= right:
-        # Traverse right, down, left, up
-        # Adjust boundaries after each direction
-    return result",
+SPIRAL TRAVERSAL:
+1. Track four boundaries: top, bottom, left, right
+2. WHILE boundaries don't cross:
+   - Traverse right along top row, then top++
+   - Traverse down along right column, then right--
+   - Traverse left along bottom row, then bottom--
+   - Traverse up along left column, then left++
+
+KEY: Always check bounds before accessing grid[r][c]",
                 triggerSignals: ToJson(new[] { "2D grid/matrix", "Find connected regions", "Shortest path in grid", "Flood fill", "Spiral/diagonal pattern", "Island problems" }),
                 commonMistakes: ToJson(new[] { "Index out of bounds", "Not marking visited before enqueueing", "Wrong boundary conditions", "Modifying grid while iterating" }),
                 resources: ToJson(new object[] {
@@ -1036,40 +1292,35 @@ Use min-heap for k largest, max-heap for k smallest.",
                 commonUseCases: ToJson(new[] { "Kth Largest Element", "Top K Frequent Elements", "K Closest Points", "Find K Pairs with Smallest Sums", "Kth Largest in Stream" }),
                 timeComplexity: "O(n log k) with heap, O(n) with quickselect",
                 spaceComplexity: "O(k)",
-                pseudoCode: @"import heapq
+                pseudoCode: @"TOP K ELEMENTS ALGORITHMS
 
-# K largest using min-heap of size k
-def k_largest(nums, k):
-    heap = []
-    for num in nums:
-        heapq.heappush(heap, num)
-        if len(heap) > k:
-            heapq.heappop(heap)
-    return heap
+APPROACH 1: MIN-HEAP OF SIZE K (for K largest)
+1. Initialize empty min-heap
+2. FOR each element in array:
+   a. Add element to heap
+   b. IF heap size > k:
+      - Remove minimum (root) from heap
+3. Heap now contains k largest elements
+   (Smallest of the k largest is at root)
 
-# Top K frequent
-def top_k_frequent(nums, k):
-    count = Counter(nums)
-    return heapq.nlargest(k, count.keys(), key=count.get)
+WHY MIN-HEAP for LARGEST? The min-heap naturally evicts
+the smallest element, keeping only the k largest.
 
-# QuickSelect for kth largest
-def quick_select(nums, k):
-    k = len(nums) - k  # Convert to index
-    def select(l, r):
-        pivot = nums[r]
-        p = l
-        for i in range(l, r):
-            if nums[i] <= pivot:
-                nums[p], nums[i] = nums[i], nums[p]
-                p += 1
-        nums[p], nums[r] = nums[r], nums[p]
-        if p == k:
-            return nums[p]
-        elif p < k:
-            return select(p + 1, r)
-        else:
-            return select(l, p - 1)
-    return select(0, len(nums) - 1)",
+APPROACH 2: QUICKSELECT (for Kth element)
+1. Choose a pivot element
+2. Partition: elements < pivot go left, > pivot go right
+3. IF pivot is at position k: return it
+   ELIF k is in left partition: recurse left
+   ELSE: recurse right
+4. Average O(n), worst O(n²)
+
+TOP K FREQUENT:
+1. Count frequencies using hash map
+2. Use heap of size k on (frequency, element) pairs
+   OR use bucket sort: bucket[freq] = [elements with that freq]
+
+K SMALLEST: Use max-heap of size k instead
+K CLOSEST POINTS: Use max-heap with distances",
                 triggerSignals: ToJson(new[] { "K largest/smallest", "K most frequent", "K closest", "Partial sorting", "Stream of elements" }),
                 commonMistakes: ToJson(new[] { "Using wrong heap type (min vs max)", "Sorting when k << n", "Not handling k > n", "QuickSelect worst case O(n²)" }),
                 resources: ToJson(new object[] {
@@ -1098,42 +1349,35 @@ def quick_select(nums, k):
                 commonUseCases: ToJson(new[] { "Merge K Sorted Lists", "Smallest Range Covering Elements", "Kth Smallest in Sorted Matrix", "Find K Pairs with Smallest Sums", "External sort merge phase" }),
                 timeComplexity: "O(n log k) where n = total elements, k = number of lists",
                 spaceComplexity: "O(k) for heap",
-                pseudoCode: @"import heapq
+                pseudoCode: @"K-WAY MERGE ALGORITHM
 
-def merge_k_sorted_lists(lists):
-    heap = []
+1. INITIALIZE min-heap with first element from each list
+   - Store tuple: (value, list_index, element_index)
+   - This identifies where each element came from
 
-    # Initialize with first element from each list
-    for i, lst in enumerate(lists):
-        if lst:
-            heapq.heappush(heap, (lst[0].val, i, lst[0]))
+2. WHILE heap is not empty:
+   a. EXTRACT minimum element from heap
+   b. ADD this element to result
+   c. IF the list this element came from has more elements:
+      - PUSH next element from that list into heap
 
-    dummy = ListNode()
-    current = dummy
+3. RETURN merged result
 
-    while heap:
-        val, i, node = heapq.heappop(heap)
-        current.next = node
-        current = current.next
+KEY INSIGHT: Heap always contains at most k elements (one from
+each list), so heap operations are O(log k). Total: O(n log k).
 
-        if node.next:
-            heapq.heappush(heap, (node.next.val, i, node.next))
+FOR LINKED LISTS:
+- Store (node.val, list_index, node) in heap
+- After extracting, push node.next if it exists
 
-    return dummy.next
+FOR ARRAYS:
+- Store (value, array_index, element_index)
+- After extracting, push next element if within bounds
 
-# For arrays
-def merge_k_sorted_arrays(arrays):
-    heap = [(arr[0], i, 0) for i, arr in enumerate(arrays) if arr]
-    heapq.heapify(heap)
-    result = []
-
-    while heap:
-        val, arr_idx, elem_idx = heapq.heappop(heap)
-        result.append(val)
-        if elem_idx + 1 < len(arrays[arr_idx]):
-            heapq.heappush(heap, (arrays[arr_idx][elem_idx + 1], arr_idx, elem_idx + 1))
-
-    return result",
+SMALLEST RANGE COVERING K LISTS:
+- Track current max while heap tracks min
+- Range = [heap_min, current_max]
+- Shrink by advancing the list that contributed min",
                 triggerSignals: ToJson(new[] { "Merge k sorted", "Multiple sorted streams", "External sorting", "Smallest from k lists", "Global order from local orders" }),
                 commonMistakes: ToJson(new[] { "Not tracking list index in heap", "Comparing nodes directly (need val)", "Not handling empty lists", "Forgetting to check for next element" }),
                 resources: ToJson(new object[] {
@@ -1173,38 +1417,34 @@ Use Floyd-Warshall when:
                 commonUseCases: ToJson(new[] { "Network Delay Time", "Cheapest Flights Within K Stops", "Path with Minimum Effort", "Swim in Rising Water", "All pairs shortest paths" }),
                 timeComplexity: "Dijkstra: O((V+E)log V), Bellman-Ford: O(VE), Floyd-Warshall: O(V³)",
                 spaceComplexity: "O(V) for Dijkstra/Bellman-Ford, O(V²) for Floyd-Warshall",
-                pseudoCode: @"# Dijkstra's Algorithm
-def dijkstra(graph, start):
-    dist = {node: float('inf') for node in graph}
-    dist[start] = 0
-    heap = [(0, start)]
+                pseudoCode: @"SHORTEST PATH ALGORITHMS
 
-    while heap:
-        d, u = heapq.heappop(heap)
-        if d > dist[u]:
-            continue
-        for v, weight in graph[u]:
-            if dist[u] + weight < dist[v]:
-                dist[v] = dist[u] + weight
-                heapq.heappush(heap, (dist[v], v))
+DIJKSTRA'S ALGORITHM (non-negative weights):
+1. Initialize distance to all nodes as infinity, dist[start] = 0
+2. Add (0, start) to min-heap
+3. WHILE heap not empty:
+   a. Extract node u with minimum distance d
+   b. IF d > dist[u]: skip (outdated entry)
+   c. FOR each neighbor v with edge weight w:
+      - IF dist[u] + w < dist[v]:
+        - Update dist[v] = dist[u] + w
+        - Add (dist[v], v) to heap
+4. Return distances
 
-    return dist
+BELLMAN-FORD (handles negative weights):
+1. Initialize dist[start] = 0, others = infinity
+2. REPEAT (V-1) times:
+   FOR each edge (u, v, w):
+     IF dist[u] + w < dist[v]:
+       dist[v] = dist[u] + w
+3. DETECT negative cycle: Run one more iteration
+   If any distance improves, negative cycle exists
 
-# Bellman-Ford
-def bellman_ford(edges, n, start):
-    dist = [float('inf')] * n
-    dist[start] = 0
-
-    for _ in range(n - 1):
-        for u, v, w in edges:
-            if dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-
-    # Check negative cycle
-    for u, v, w in edges:
-        if dist[u] + w < dist[v]:
-            return None  # Negative cycle
-    return dist",
+FLOYD-WARSHALL (all pairs):
+1. Initialize dist[i][j] = edge weight or infinity
+2. FOR each intermediate vertex k:
+   FOR each pair (i, j):
+     dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])",
                 triggerSignals: ToJson(new[] { "Weighted graph", "Minimum cost path", "Network delay/latency", "Travel cost optimization", "Negative weights possible" }),
                 commonMistakes: ToJson(new[] { "Using Dijkstra with negative weights", "Not detecting negative cycles", "Wrong priority queue usage", "Not handling disconnected nodes" }),
                 resources: ToJson(new object[] {
@@ -1236,40 +1476,34 @@ Both produce optimal MST with V-1 edges.",
                 commonUseCases: ToJson(new[] { "Min Cost to Connect All Points", "Network cable/road design", "Connecting cities", "Image segmentation", "Cluster analysis" }),
                 timeComplexity: "Kruskal: O(E log E), Prim: O((V+E) log V)",
                 spaceComplexity: "O(V) for Union-Find or heap",
-                pseudoCode: @"# Kruskal's Algorithm
-def kruskal(edges, n):
-    edges.sort(key=lambda x: x[2])  # Sort by weight
-    uf = UnionFind(n)
-    mst_weight = 0
-    mst_edges = []
+                pseudoCode: @"MINIMUM SPANNING TREE ALGORITHMS
 
-    for u, v, w in edges:
-        if uf.union(u, v):  # No cycle
-            mst_weight += w
-            mst_edges.append((u, v, w))
-            if len(mst_edges) == n - 1:
-                break
+KRUSKAL'S ALGORITHM (edge-based):
+1. SORT all edges by weight (ascending)
+2. Initialize Union-Find with n nodes
+3. Initialize MST weight = 0, edge count = 0
+4. FOR each edge (u, v, w) in sorted order:
+   a. IF u and v are in different components (Find):
+      - Union u and v
+      - Add w to MST weight
+      - Increment edge count
+   b. IF edge count == n-1: MST complete, stop
+5. Return MST weight
 
-    return mst_weight if len(mst_edges) == n - 1 else -1
+PRIM'S ALGORITHM (vertex-based):
+1. Initialize visited array (all false)
+2. Add (0, start_node) to min-heap
+3. Initialize MST weight = 0
+4. WHILE heap not empty AND not all visited:
+   a. Extract (weight, node) with minimum weight
+   b. IF node already visited: skip
+   c. Mark node visited, add weight to MST
+   d. FOR each unvisited neighbor:
+      - Add (edge_weight, neighbor) to heap
+5. Return MST weight
 
-# Prim's Algorithm
-def prim(graph, n):
-    visited = [False] * n
-    heap = [(0, 0)]  # (weight, node)
-    mst_weight = 0
-
-    while heap:
-        w, u = heapq.heappop(heap)
-        if visited[u]:
-            continue
-        visited[u] = True
-        mst_weight += w
-
-        for v, weight in graph[u]:
-            if not visited[v]:
-                heapq.heappush(heap, (weight, v))
-
-    return mst_weight",
+CHOOSE KRUSKAL when: Sparse graph, edges given as list
+CHOOSE PRIM when: Dense graph, adjacency list given",
                 triggerSignals: ToJson(new[] { "Connect all points minimum cost", "Network design", "Spanning tree", "Minimum total weight to connect" }),
                 commonMistakes: ToJson(new[] { "Using on directed graphs", "Not checking if all vertices connected", "Wrong Union-Find usage", "Duplicate edges in heap" }),
                 resources: ToJson(new object[] {
@@ -1307,39 +1541,34 @@ Use Z-algorithm when:
                 commonUseCases: ToJson(new[] { "Find substring", "Pattern matching", "Repeated substrings", "String period", "Anagram search" }),
                 timeComplexity: "O(n + m) where n = text length, m = pattern length",
                 spaceComplexity: "O(m) for failure/Z array",
-                pseudoCode: @"# KMP Algorithm
-def kmp_search(text, pattern):
-    # Build failure function
-    def build_lps(pattern):
-        lps = [0] * len(pattern)
-        length = 0
-        i = 1
-        while i < len(pattern):
-            if pattern[i] == pattern[length]:
-                length += 1
-                lps[i] = length
-                i += 1
-            elif length > 0:
-                length = lps[length - 1]
-            else:
-                i += 1
-        return lps
+                pseudoCode: @"STRING MATCHING ALGORITHMS
 
-    lps = build_lps(pattern)
-    i = j = 0
+KMP (KNUTH-MORRIS-PRATT) ALGORITHM:
 
-    while i < len(text):
-        if text[i] == pattern[j]:
-            i += 1
-            j += 1
-            if j == len(pattern):
-                return i - j  # Found
-        elif j > 0:
-            j = lps[j - 1]
-        else:
-            i += 1
+Step 1: Build LPS (Longest Proper Prefix Suffix) array
+- lps[i] = length of longest proper prefix of pattern[0..i]
+          that is also a suffix
+- Example: 'ABAB' -> lps = [0, 0, 1, 2]
 
-    return -1",
+Building LPS:
+1. lps[0] = 0, length = 0, i = 1
+2. WHILE i < pattern length:
+   - IF pattern[i] == pattern[length]:
+     length++, lps[i] = length, i++
+   - ELIF length > 0:
+     length = lps[length-1] (use previous LPS)
+   - ELSE: lps[i] = 0, i++
+
+Step 2: Search using LPS
+1. i = 0 (text index), j = 0 (pattern index)
+2. WHILE i < text length:
+   - IF text[i] == pattern[j]: i++, j++
+     - IF j == pattern length: Found match at i-j
+   - ELIF j > 0: j = lps[j-1] (skip matched prefix)
+   - ELSE: i++
+
+KEY INSIGHT: When mismatch occurs, LPS tells us how many
+characters we can skip (already matched as prefix).",
                 triggerSignals: ToJson(new[] { "Find pattern in text", "Multiple pattern search", "String period/repetition", "Efficient substring search" }),
                 commonMistakes: ToJson(new[] { "Wrong LPS/failure function", "Hash collision handling in Rabin-Karp", "Off-by-one in indices", "Not handling empty pattern" }),
                 resources: ToJson(new object[] {
@@ -1385,13 +1614,35 @@ Cons:
 - Expensive insertion/deletion in middle
 - May waste space if not full",
                 commonUseCases: ToJson(new[] { "Storing collections", "Implementing stacks/queues", "Matrix operations", "Buffers", "Hash table backing" }),
-                implementation: @"# Python list (dynamic array)
-arr = [1, 2, 3, 4, 5]
-arr[0]          # Access: O(1)
-arr[2] = 10     # Update: O(1)
-arr.append(6)   # Insert end: O(1) amortized
-arr.pop()       # Delete end: O(1)
-arr.insert(1, 9) # Insert at index: O(n)",
+                implementation: @"ARRAY OPERATIONS
+
+ACCESS BY INDEX
+  Input: array, index i
+  Output: element at position i
+  Time: O(1) - direct memory address calculation
+
+UPDATE BY INDEX
+  Input: array, index i, new value
+  Action: Replace element at position i with new value
+  Time: O(1) - direct memory access
+
+INSERT AT END (Dynamic Array)
+  1. IF array is full, allocate new array with 2x capacity
+  2. Copy existing elements (only when resizing)
+  3. Place new element at position [size]
+  4. Increment size
+  Time: O(1) amortized
+
+INSERT AT POSITION i
+  1. Shift all elements from position i to end one position right
+  2. Place new element at position i
+  3. Increment size
+  Time: O(n) - must shift n-i elements
+
+DELETE AT POSITION i
+  1. Shift all elements from position i+1 to end one position left
+  2. Decrement size
+  Time: O(n) - must shift n-i-1 elements",
                 resources: ToJson(new object[] {
                     new { title = "Arrays 101 - LeetCode", url = "https://leetcode.com/explore/learn/card/fun-with-arrays/", type = "course" }
                 }),
@@ -1427,21 +1678,42 @@ Cons:
 - Extra memory for pointers
 - Poor cache locality",
                 commonUseCases: ToJson(new[] { "LRU Cache", "Undo functionality", "Music playlist", "Browser history", "Polynomial representation" }),
-                implementation: @"class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
+                implementation: @"LINKED LIST OPERATIONS
 
-# Insert at head
-def insert_head(head, val):
-    new_node = ListNode(val)
-    new_node.next = head
-    return new_node
+NODE STRUCTURE
+  Each node contains:
+  - value: the data stored
+  - next: pointer/reference to next node (null for last node)
 
-# Delete node (given prev)
-def delete_after(prev):
-    if prev and prev.next:
-        prev.next = prev.next.next",
+INSERT AT HEAD
+  1. Create new node with given value
+  2. Set new node's next pointer to current head
+  3. Update head to point to new node
+  Time: O(1)
+
+INSERT AT TAIL (with tail pointer)
+  1. Create new node with given value
+  2. Set current tail's next to new node
+  3. Update tail to point to new node
+  Time: O(1)
+
+INSERT AFTER NODE
+  1. Create new node with given value
+  2. Set new node's next to given node's next
+  3. Set given node's next to new node
+  Time: O(1)
+
+DELETE NODE (given previous node)
+  1. Set previous node's next to node.next.next
+  2. (Optional) Free deleted node's memory
+  Time: O(1)
+
+TRAVERSE/SEARCH
+  1. Start at head
+  2. While current node is not null:
+     a. Process/check current node
+     b. Move to current.next
+  Time: O(n)",
                 resources: ToJson(new object[] {
                     new { title = "Linked List - LeetCode", url = "https://leetcode.com/explore/learn/card/linked-list/", type = "course" }
                 }),
@@ -1477,13 +1749,29 @@ Cons:
 - Can only access top element
 - Fixed ordering",
                 commonUseCases: ToJson(new[] { "Valid parentheses", "Reverse Polish notation", "Function call stack", "Browser back button", "Undo/Redo" }),
-                implementation: @"# Using list as stack in Python
-stack = []
-stack.append(1)     # Push
-stack.append(2)
-top = stack.pop()   # Pop: returns 2
-peek = stack[-1]    # Peek: returns 1
-is_empty = len(stack) == 0",
+                implementation: @"STACK OPERATIONS (LIFO)
+
+PUSH (add to top)
+  1. IF using array: place element at position [top + 1], increment top
+  2. IF using linked list: create new node, link to current head, update head
+  Time: O(1)
+
+POP (remove from top)
+  1. IF stack is empty, return error/null
+  2. Store top element for return
+  3. IF using array: decrement top index
+  4. IF using linked list: update head to head.next
+  5. Return stored element
+  Time: O(1)
+
+PEEK (view top without removing)
+  1. IF stack is empty, return error/null
+  2. Return element at top position
+  Time: O(1)
+
+IS_EMPTY
+  1. Return true if top index is -1 (array) or head is null (linked list)
+  Time: O(1)",
                 resources: ToJson(new object[] {
                     new { title = "Stack Problems", url = "https://leetcode.com/tag/stack/", type = "practice" }
                 }),
@@ -1518,14 +1806,29 @@ Cons:
 - No random access
 - Can only access front element",
                 commonUseCases: ToJson(new[] { "BFS traversal", "Level-order tree traversal", "Task scheduling", "Print queue", "Message queues" }),
-                implementation: @"from collections import deque
+                implementation: @"QUEUE OPERATIONS (FIFO)
 
-queue = deque()
-queue.append(1)      # Enqueue
-queue.append(2)
-front = queue.popleft()  # Dequeue: returns 1
-peek = queue[0]      # Peek front
-is_empty = len(queue) == 0",
+ENQUEUE (add to back)
+  1. IF using circular array: place at position [(rear + 1) mod capacity], update rear
+  2. IF using linked list: create new node, link current tail to new node, update tail
+  Time: O(1)
+
+DEQUEUE (remove from front)
+  1. IF queue is empty, return error/null
+  2. Store front element for return
+  3. IF using circular array: update front = (front + 1) mod capacity
+  4. IF using linked list: update head to head.next
+  5. Return stored element
+  Time: O(1)
+
+PEEK (view front without removing)
+  1. IF queue is empty, return error/null
+  2. Return element at front position
+  Time: O(1)
+
+IS_EMPTY
+  1. Return true if front equals rear (circular array) or head is null
+  Time: O(1)",
                 resources: ToJson(new object[] {
                     new { title = "Queue Problems", url = "https://leetcode.com/tag/queue/", type = "practice" }
                 }),
@@ -1561,17 +1864,34 @@ Cons:
 - Worst case O(n) with collisions
 - Memory overhead for load factor",
                 commonUseCases: ToJson(new[] { "Two Sum", "Frequency counting", "Caching", "Anagram grouping", "LRU Cache", "Symbol tables" }),
-                implementation: @"# Python dict
-d = {}
-d['key'] = 'value'      # Insert
-val = d['key']          # Lookup
-del d['key']            # Delete
-exists = 'key' in d     # Contains
-d.get('key', default)   # Safe lookup
+                implementation: @"HASH TABLE OPERATIONS
 
-# Counting
-from collections import Counter
-counts = Counter([1,1,2,3,3,3])",
+HASH FUNCTION
+  Input: key
+  Output: index in range [0, capacity-1]
+  Common: hash(key) mod capacity
+
+INSERT (key, value)
+  1. Compute index = hash(key) mod capacity
+  2. IF collision (slot occupied by different key):
+     - Chaining: add to linked list at index
+     - Open addressing: probe for next empty slot
+  3. Store key-value pair at index
+  4. IF load factor > threshold, resize and rehash all entries
+  Time: O(1) average, O(n) worst case
+
+LOOKUP (key)
+  1. Compute index = hash(key) mod capacity
+  2. IF chaining: search linked list at index
+  3. IF open addressing: probe until key found or empty slot
+  4. Return value if found, else null/error
+  Time: O(1) average
+
+DELETE (key)
+  1. Compute index = hash(key) mod capacity
+  2. Find entry with matching key
+  3. Remove entry (mark as deleted for open addressing)
+  Time: O(1) average",
                 resources: ToJson(new object[] {
                     new { title = "Hash Table - LeetCode", url = "https://leetcode.com/explore/learn/card/hash-table/", type = "course" }
                 }),
@@ -1607,16 +1927,29 @@ Cons:
 - Elements must be hashable
 - Memory overhead",
                 commonUseCases: ToJson(new[] { "Contains Duplicate", "Longest consecutive sequence", "Visited tracking", "Finding unique elements", "Set intersection/union" }),
-                implementation: @"# Python set
-s = set()
-s.add(1)           # Add
-s.add(2)
-s.remove(1)        # Remove (raises if missing)
-s.discard(1)       # Remove (no error if missing)
-exists = 2 in s    # Contains: O(1)
+                implementation: @"HASH SET OPERATIONS (Unique Elements)
 
-# Set from list (deduplicates)
-unique = set([1, 2, 2, 3])  # {1, 2, 3}",
+ADD (element)
+  1. Compute index = hash(element) mod capacity
+  2. IF element already exists at computed location, do nothing (no duplicates)
+  3. Otherwise, insert element using hash table collision handling
+  Time: O(1) average
+
+CONTAINS (element)
+  1. Compute index = hash(element) mod capacity
+  2. Search for element at computed location (handle collisions)
+  3. Return true if found, false otherwise
+  Time: O(1) average
+
+REMOVE (element)
+  1. Compute index = hash(element) mod capacity
+  2. Find and remove element if present
+  Time: O(1) average
+
+SET OPERATIONS
+  Union(A, B): Add all elements from B to A - O(n+m)
+  Intersection(A, B): For each element in smaller set, check if in larger - O(min(n,m))
+  Difference(A, B): Elements in A but not in B - O(n)",
                 resources: ToJson(new object[] {
                     new { title = "Set Problems", url = "https://leetcode.com/tag/hash-table/", type = "practice" }
                 }),
@@ -1651,21 +1984,37 @@ Cons:
 - More complex than hash table
 - Needs balancing for guarantees",
                 commonUseCases: ToJson(new[] { "Validate BST", "Kth smallest element", "LCA in BST", "BST iterator", "Range sum of BST" }),
-                implementation: @"class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+                implementation: @"BINARY SEARCH TREE OPERATIONS
 
-def search(root, target):
-    if not root:
-        return None
-    if root.val == target:
-        return root
-    elif target < root.val:
-        return search(root.left, target)
-    else:
-        return search(root.right, target)",
+NODE STRUCTURE
+  Each node contains: value, left child pointer, right child pointer
+  BST Property: left subtree values < node value < right subtree values
+
+SEARCH (root, target)
+  1. IF root is null, return NOT FOUND
+  2. IF target equals root.value, return root
+  3. IF target < root.value, search in left subtree
+  4. IF target > root.value, search in right subtree
+  Time: O(h) where h is height
+
+INSERT (root, value)
+  1. IF root is null, create new node with value, return it
+  2. IF value < root.value, root.left = insert(root.left, value)
+  3. IF value > root.value, root.right = insert(root.right, value)
+  4. Return root
+  Time: O(h)
+
+DELETE (root, value)
+  1. Find node to delete using search
+  2. IF leaf node: simply remove
+  3. IF one child: replace with child
+  4. IF two children: replace with inorder successor (min of right subtree)
+  Time: O(h)
+
+INORDER TRAVERSAL (gives sorted order)
+  1. Traverse left subtree
+  2. Visit current node
+  3. Traverse right subtree",
                 resources: ToJson(new object[] {
                     new { title = "BST - LeetCode", url = "https://leetcode.com/explore/learn/card/introduction-to-data-structure-binary-search-tree/", type = "course" }
                 }),
@@ -1701,22 +2050,38 @@ Cons:
 - Not sorted
 - No efficient search",
                 commonUseCases: ToJson(new[] { "Kth largest element", "Merge k sorted lists", "Find median", "Task scheduler", "Top k frequent" }),
-                implementation: @"import heapq
+                implementation: @"HEAP OPERATIONS (Array-based)
 
-# Min heap (default)
-heap = []
-heapq.heappush(heap, 3)
-heapq.heappush(heap, 1)
-min_val = heapq.heappop(heap)  # Returns 1
+ARRAY REPRESENTATION
+  Parent of index i: (i-1) / 2
+  Left child of i: 2*i + 1
+  Right child of i: 2*i + 2
 
-# Max heap (negate values)
-max_heap = []
-heapq.heappush(max_heap, -3)
-max_val = -heapq.heappop(max_heap)  # Returns 3
+INSERT (value)
+  1. Add value at end of array
+  2. BUBBLE UP: While new element < parent (min-heap):
+     a. Swap with parent
+     b. Move to parent index
+  Time: O(log n)
 
-# Heapify existing list
-arr = [3, 1, 4, 1, 5]
-heapq.heapify(arr)  # O(n)",
+EXTRACT MIN/MAX
+  1. Store root value (index 0) for return
+  2. Move last element to root position
+  3. BUBBLE DOWN: While element > smaller child (min-heap):
+     a. Swap with smaller child
+     b. Move to that child's index
+  4. Return stored value
+  Time: O(log n)
+
+HEAPIFY (build heap from array)
+  1. Start from last non-leaf node: index (n/2 - 1)
+  2. For each node from (n/2-1) down to 0:
+     a. Bubble down that node
+  Time: O(n) - not O(n log n) due to most nodes being near leaves
+
+PEEK
+  1. Return element at index 0
+  Time: O(1)",
                 resources: ToJson(new object[] {
                     new { title = "Heap - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/3", type = "course" }
                 }),
@@ -1752,22 +2117,38 @@ Cons:
 - Slower than hash for exact lookup
 - Complex implementation",
                 commonUseCases: ToJson(new[] { "Implement Trie", "Word Search II", "Autocomplete", "Spell checker", "Replace words" }),
-                implementation: @"class TrieNode:
-    def __init__(self):
-        self.children = {}
-        self.is_end = False
+                implementation: @"TRIE (PREFIX TREE) OPERATIONS
 
-class Trie:
-    def __init__(self):
-        self.root = TrieNode()
-    
-    def insert(self, word):
-        node = self.root
-        for c in word:
-            if c not in node.children:
-                node.children[c] = TrieNode()
-            node = node.children[c]
-        node.is_end = True",
+NODE STRUCTURE
+  Each node contains:
+  - children: map/array of child nodes (one per character)
+  - is_end_of_word: boolean flag marking complete words
+
+INSERT (word)
+  1. Start at root node
+  2. For each character c in word:
+     a. IF c not in current node's children, create new child node
+     b. Move to child node for c
+  3. Mark final node as end of word
+  Time: O(m) where m = word length
+
+SEARCH (word)
+  1. Start at root node
+  2. For each character c in word:
+     a. IF c not in current node's children, return FALSE
+     b. Move to child node for c
+  3. Return TRUE only if final node is marked as end of word
+  Time: O(m)
+
+STARTS_WITH (prefix)
+  1. Same as search, but return TRUE if we reach end of prefix
+  2. Don't require end-of-word marker
+  Time: O(m)
+
+AUTOCOMPLETE (prefix)
+  1. Navigate to node for prefix
+  2. DFS/BFS from that node to collect all words
+  Time: O(m + k) where k = number of results",
                 resources: ToJson(new object[] {
                     new { title = "Trie - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/11", type = "course" }
                 }),
@@ -1802,23 +2183,39 @@ Cons:
 - O(degree) edge lookup
 - Slower than matrix for dense graphs",
                 commonUseCases: ToJson(new[] { "Social networks", "Road networks", "Course prerequisites", "Web crawling", "Recommendation systems" }),
-                implementation: @"from collections import defaultdict
+                implementation: @"GRAPH (ADJACENCY LIST) OPERATIONS
 
-# Adjacency list representation
-graph = defaultdict(list)
+REPRESENTATION
+  Store a map/array where:
+  - Key/index = vertex
+  - Value = list of (neighbor, weight) pairs
 
-# Add edges (undirected)
-def add_edge(u, v):
-    graph[u].append(v)
-    graph[v].append(u)
+ADD VERTEX
+  1. Create new entry with empty neighbor list
+  Time: O(1)
 
-# Get neighbors
-neighbors = graph[node]
+ADD EDGE (u, v, weight)
+  1. Append (v, weight) to adjacency list of u
+  2. For undirected: also append (u, weight) to list of v
+  Time: O(1)
 
-# Build from edge list
-edges = [[0,1], [1,2], [2,0]]
-for u, v in edges:
-    add_edge(u, v)",
+CHECK EDGE EXISTS (u, v)
+  1. Scan adjacency list of u for v
+  Time: O(degree of u)
+
+GET NEIGHBORS (u)
+  1. Return adjacency list of u
+  Time: O(1)
+
+DFS TRAVERSAL
+  1. Mark starting vertex as visited
+  2. For each unvisited neighbor: recursively DFS
+  Time: O(V + E)
+
+BFS TRAVERSAL
+  1. Add starting vertex to queue, mark visited
+  2. While queue not empty: dequeue, visit neighbors, enqueue unvisited
+  Time: O(V + E)",
                 resources: ToJson(new object[] {
                     new { title = "Graph - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/7", type = "course" }
                 }),
@@ -1854,16 +2251,40 @@ Cons:
 - More memory than array
 - Slightly complex API",
                 commonUseCases: ToJson(new[] { "Sliding window maximum", "BFS implementation", "Palindrome checker", "Task scheduling", "Recent calls" }),
-                implementation: @"from collections import deque
+                implementation: @"DEQUE (DOUBLE-ENDED QUEUE) OPERATIONS
 
-dq = deque()
-dq.append(1)        # Add to right
-dq.appendleft(0)    # Add to left
-right = dq.pop()    # Remove from right
-left = dq.popleft() # Remove from left
+REPRESENTATION
+  Typically implemented as doubly-linked list or circular buffer
 
-# With max size (auto-removes from other end)
-dq = deque(maxlen=3)",
+ADD TO BACK (value)
+  1. Create new node with value
+  2. Link current tail to new node
+  3. Update tail pointer
+  Time: O(1)
+
+ADD TO FRONT (value)
+  1. Create new node with value
+  2. Link new node to current head
+  3. Update head pointer
+  Time: O(1)
+
+REMOVE FROM BACK
+  1. Store tail value for return
+  2. Update tail to previous node
+  3. Return stored value
+  Time: O(1)
+
+REMOVE FROM FRONT
+  1. Store head value for return
+  2. Update head to next node
+  3. Return stored value
+  Time: O(1)
+
+USE CASE: SLIDING WINDOW MAXIMUM
+  - Add indices to back as you traverse
+  - Remove from front when outside window
+  - Remove from back when current value is larger
+  - Front always contains index of maximum in window",
                 resources: ToJson(new object[] {
                     new { title = "Deque Documentation", url = "https://docs.python.org/3/library/collections.html#collections.deque", type = "documentation" }
                 }),
@@ -1898,28 +2319,34 @@ Cons:
 - Cannot efficiently split sets
 - Amortized not worst-case",
                 commonUseCases: ToJson(new[] { "Number of connected components", "Redundant connection", "Accounts merge", "Making a large island", "Graph valid tree" }),
-                implementation: @"class UnionFind:
-    def __init__(self, n):
-        self.parent = list(range(n))
-        self.rank = [0] * n
-        self.count = n  # Number of components
+                implementation: @"UNION-FIND (DISJOINT SET) OPERATIONS
 
-    def find(self, x):
-        if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])
-        return self.parent[x]
+DATA STRUCTURE
+  - parent[i]: parent of element i (initially itself)
+  - rank[i]: approximate depth of tree rooted at i
+  - count: number of disjoint sets
 
-    def union(self, x, y):
-        px, py = self.find(x), self.find(y)
-        if px == py:
-            return False
-        if self.rank[px] < self.rank[py]:
-            px, py = py, px
-        self.parent[py] = px
-        if self.rank[px] == self.rank[py]:
-            self.rank[px] += 1
-        self.count -= 1
-        return True",
+FIND (x) - with path compression
+  1. IF parent[x] equals x, return x (x is root)
+  2. Otherwise, recursively find root: root = find(parent[x])
+  3. PATH COMPRESSION: set parent[x] = root (flatten tree)
+  4. Return root
+  Time: O(α(n)) ≈ O(1) amortized
+
+UNION (x, y) - with union by rank
+  1. Find roots: rootX = find(x), rootY = find(y)
+  2. IF rootX equals rootY, already in same set - return false
+  3. UNION BY RANK: attach smaller tree under larger tree
+     - IF rank[rootX] < rank[rootY], swap them
+     - Set parent[rootY] = rootX
+     - IF ranks were equal, increment rank[rootX]
+  4. Decrement component count
+  5. Return true
+  Time: O(α(n)) ≈ O(1) amortized
+
+CONNECTED (x, y)
+  1. Return find(x) equals find(y)
+  Time: O(α(n))",
                 resources: ToJson(new object[] {
                     new { title = "Union Find - NeetCode", url = "https://neetcode.io/courses/advanced-algorithms/9", type = "course" }
                 }),
@@ -1953,46 +2380,38 @@ Cons:
 - Complex implementation
 - Overkill for simple problems",
                 commonUseCases: ToJson(new[] { "Range Sum Query - Mutable", "Range Minimum Query", "Count of Smaller Numbers After Self", "Falling Squares", "Rectangle Area II" }),
-                implementation: @"class SegmentTree:
-    def __init__(self, nums):
-        self.n = len(nums)
-        self.tree = [0] * (4 * self.n)
-        self._build(nums, 0, 0, self.n - 1)
+                implementation: @"SEGMENT TREE OPERATIONS
 
-    def _build(self, nums, node, start, end):
-        if start == end:
-            self.tree[node] = nums[start]
-        else:
-            mid = (start + end) // 2
-            self._build(nums, 2*node+1, start, mid)
-            self._build(nums, 2*node+2, mid+1, end)
-            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+STRUCTURE (Array-based)
+  - tree[0] = root (entire array aggregate)
+  - tree[2*i+1] = left child of tree[i]
+  - tree[2*i+2] = right child of tree[i]
+  - Leaves store individual array elements
+  - Internal nodes store aggregate (sum/min/max) of children
 
-    def update(self, idx, val):
-        self._update(0, 0, self.n - 1, idx, val)
+BUILD (array, node, start, end)
+  1. IF start equals end (leaf): tree[node] = array[start]
+  2. ELSE:
+     a. mid = (start + end) / 2
+     b. Build left child: build(array, 2*node+1, start, mid)
+     c. Build right child: build(array, 2*node+2, mid+1, end)
+     d. tree[node] = aggregate(left child, right child)
+  Time: O(n)
 
-    def _update(self, node, start, end, idx, val):
-        if start == end:
-            self.tree[node] = val
-        else:
-            mid = (start + end) // 2
-            if idx <= mid:
-                self._update(2*node+1, start, mid, idx, val)
-            else:
-                self._update(2*node+2, mid+1, end, idx, val)
-            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+POINT UPDATE (node, start, end, index, value)
+  1. IF leaf (start equals end): update tree[node]
+  2. ELSE:
+     a. mid = (start + end) / 2
+     b. IF index <= mid: recurse on left child
+     c. ELSE: recurse on right child
+     d. Recompute tree[node] from children
+  Time: O(log n)
 
-    def query(self, left, right):
-        return self._query(0, 0, self.n - 1, left, right)
-
-    def _query(self, node, start, end, left, right):
-        if right < start or left > end:
-            return 0
-        if left <= start and end <= right:
-            return self.tree[node]
-        mid = (start + end) // 2
-        return self._query(2*node+1, start, mid, left, right) + \
-               self._query(2*node+2, mid+1, end, left, right)",
+RANGE QUERY (node, start, end, queryLeft, queryRight)
+  1. IF no overlap (queryRight < start OR queryLeft > end): return identity
+  2. IF total overlap (queryLeft <= start AND end <= queryRight): return tree[node]
+  3. ELSE: return aggregate of queries on both children
+  Time: O(log n)",
                 resources: ToJson(new object[] {
                     new { title = "Segment Tree - CP Algorithms", url = "https://cp-algorithms.com/data_structures/segment_tree.html", type = "article" },
                     new { title = "Segment Tree Tutorial", url = "https://www.geeksforgeeks.org/segment-tree-data-structure/", type = "article" }
@@ -2027,35 +2446,38 @@ Cons:
 - Only works for associative, invertible operations
 - Cannot do range updates easily",
                 commonUseCases: ToJson(new[] { "Range Sum Query - Mutable", "Count of Smaller Numbers After Self", "Count inversions", "2D range sums" }),
-                implementation: @"class FenwickTree:
-    def __init__(self, n):
-        self.n = n
-        self.tree = [0] * (n + 1)
+                implementation: @"FENWICK TREE (BIT) OPERATIONS
 
-    def update(self, i, delta):
-        '''Add delta to index i (1-indexed)'''
-        while i <= self.n:
-            self.tree[i] += delta
-            i += i & (-i)  # Add lowest set bit
+KEY INSIGHT
+  - Uses binary representation of indices
+  - i & (-i) gives the lowest set bit (LSB)
+  - Each index i is responsible for a range of size LSB(i)
 
-    def prefix_sum(self, i):
-        '''Sum from index 1 to i'''
-        total = 0
-        while i > 0:
-            total += self.tree[i]
-            i -= i & (-i)  # Remove lowest set bit
-        return total
+STRUCTURE (1-indexed array)
+  - tree[i] stores sum of elements in range that ends at i
+  - Range size determined by lowest set bit of i
 
-    def range_sum(self, left, right):
-        '''Sum from left to right (1-indexed)'''
-        return self.prefix_sum(right) - self.prefix_sum(left - 1)
+UPDATE (index, delta)
+  1. WHILE index <= n:
+     a. Add delta to tree[index]
+     b. Move to next responsible index: index += (index & -index)
+  Time: O(log n)
 
-# Build from array
-def build_fenwick(nums):
-    bit = FenwickTree(len(nums))
-    for i, num in enumerate(nums):
-        bit.update(i + 1, num)
-    return bit",
+PREFIX SUM (index) - sum from 1 to index
+  1. Initialize total = 0
+  2. WHILE index > 0:
+     a. Add tree[index] to total
+     b. Remove lowest set bit: index -= (index & -index)
+  3. Return total
+  Time: O(log n)
+
+RANGE SUM (left, right)
+  1. Return prefixSum(right) - prefixSum(left - 1)
+  Time: O(log n)
+
+BIT MANIPULATION TRICK
+  - (i & -i) isolates the lowest set bit
+  - Example: 12 (1100) & -12 (0100) = 4",
                 resources: ToJson(new object[] {
                     new { title = "Fenwick Tree - CP Algorithms", url = "https://cp-algorithms.com/data_structures/fenwick.html", type = "article" },
                     new { title = "BIT Tutorial", url = "https://www.topcoder.com/thrive/articles/Binary%20Indexed%20Trees", type = "article" }
@@ -2089,63 +2511,39 @@ Cons:
 - Slower insertions than Red-Black
 - Extra height storage per node",
                 commonUseCases: ToJson(new[] { "Database indexing", "In-memory sorted data", "Interval trees", "Priority scheduling" }),
-                implementation: @"class AVLNode:
-    def __init__(self, val):
-        self.val = val
-        self.left = self.right = None
-        self.height = 1
+                implementation: @"AVL TREE OPERATIONS (Self-Balancing BST)
 
-def get_height(node):
-    return node.height if node else 0
+BALANCE PROPERTY
+  For every node: |height(left subtree) - height(right subtree)| ≤ 1
+  Balance factor = height(left) - height(right)
 
-def get_balance(node):
-    return get_height(node.left) - get_height(node.right) if node else 0
+ROTATIONS (to restore balance)
+  RIGHT ROTATE (when left-heavy):
+    1. y becomes the root
+    2. x (y's left child) becomes new root
+    3. x's right subtree becomes y's left subtree
+    4. y becomes x's right child
+    5. Update heights
 
-def right_rotate(y):
-    x = y.left
-    T2 = x.right
-    x.right = y
-    y.left = T2
-    y.height = 1 + max(get_height(y.left), get_height(y.right))
-    x.height = 1 + max(get_height(x.left), get_height(x.right))
-    return x
+  LEFT ROTATE (when right-heavy):
+    Mirror of right rotation
 
-def left_rotate(x):
-    y = x.right
-    T2 = y.left
-    y.left = x
-    x.right = T2
-    x.height = 1 + max(get_height(x.left), get_height(x.right))
-    y.height = 1 + max(get_height(y.left), get_height(y.right))
-    return y
+INSERT (value)
+  1. Perform standard BST insert
+  2. Update height of current node
+  3. Calculate balance factor
+  4. IF unbalanced, apply appropriate rotation:
+     - Left-Left (balance > 1, value < left.value): right rotate
+     - Right-Right (balance < -1, value > right.value): left rotate
+     - Left-Right (balance > 1, value > left.value): left rotate left child, then right rotate
+     - Right-Left (balance < -1, value < right.value): right rotate right child, then left rotate
+  Time: O(log n)
 
-def insert(root, val):
-    if not root:
-        return AVLNode(val)
-    if val < root.val:
-        root.left = insert(root.left, val)
-    else:
-        root.right = insert(root.right, val)
-
-    root.height = 1 + max(get_height(root.left), get_height(root.right))
-    balance = get_balance(root)
-
-    # Left Left
-    if balance > 1 and val < root.left.val:
-        return right_rotate(root)
-    # Right Right
-    if balance < -1 and val > root.right.val:
-        return left_rotate(root)
-    # Left Right
-    if balance > 1 and val > root.left.val:
-        root.left = left_rotate(root.left)
-        return right_rotate(root)
-    # Right Left
-    if balance < -1 and val < root.right.val:
-        root.right = right_rotate(root.right)
-        return left_rotate(root)
-
-    return root",
+DELETE (value)
+  1. Perform standard BST delete
+  2. Update heights back up to root
+  3. Rebalance each ancestor if needed
+  Time: O(log n)",
                 resources: ToJson(new object[] {
                     new { title = "AVL Tree - GeeksforGeeks", url = "https://www.geeksforgeeks.org/introduction-to-avl-tree/", type = "article" },
                     new { title = "AVL Tree Visualization", url = "https://www.cs.usfca.edu/~galles/visualization/AVLtree.html", type = "visualization" }
@@ -2179,52 +2577,43 @@ Cons:
 - Not optimal for all access patterns
 - More complex than simple cache",
                 commonUseCases: ToJson(new[] { "LRU Cache problem", "Web browser cache", "Database buffer pool", "CPU cache simulation", "API response caching" }),
-                implementation: @"from collections import OrderedDict
+                implementation: @"LRU CACHE OPERATIONS
 
-class LRUCache:
-    def __init__(self, capacity: int):
-        self.cache = OrderedDict()
-        self.capacity = capacity
+DATA STRUCTURE
+  - Hash map: key -> node reference (O(1) lookup)
+  - Doubly linked list: maintains recency order
+    - Head = most recently used
+    - Tail = least recently used
+  - Use dummy head/tail nodes to simplify edge cases
 
-    def get(self, key: int) -> int:
-        if key not in self.cache:
-            return -1
-        self.cache.move_to_end(key)  # Mark as recently used
-        return self.cache[key]
+GET (key)
+  1. IF key not in hash map: return NOT_FOUND
+  2. Get node from hash map
+  3. Move node to head of linked list (mark as recently used)
+  4. Return node's value
+  Time: O(1)
 
-    def put(self, key: int, value: int) -> None:
-        if key in self.cache:
-            self.cache.move_to_end(key)
-        self.cache[key] = value
-        if len(self.cache) > self.capacity:
-            self.cache.popitem(last=False)  # Remove oldest
+PUT (key, value)
+  1. IF key exists in hash map:
+     a. Update node's value
+     b. Move node to head
+  2. ELSE (new key):
+     a. Create new node with key-value
+     b. Add to hash map
+     c. Add node to head of list
+     d. IF size > capacity:
+        - Remove tail node (least recently used)
+        - Remove from hash map
+  Time: O(1)
 
-# Manual implementation with doubly linked list
-class DLinkedNode:
-    def __init__(self, key=0, val=0):
-        self.key = key
-        self.val = val
-        self.prev = None
-        self.next = None
+HELPER: Move to Head
+  1. Remove node from current position (update prev/next pointers)
+  2. Insert node right after dummy head
 
-class LRUCacheManual:
-    def __init__(self, capacity):
-        self.cache = {}
-        self.capacity = capacity
-        self.head = DLinkedNode()  # Dummy head
-        self.tail = DLinkedNode()  # Dummy tail
-        self.head.next = self.tail
-        self.tail.prev = self.head
-
-    def _remove(self, node):
-        node.prev.next = node.next
-        node.next.prev = node.prev
-
-    def _add_to_head(self, node):
-        node.next = self.head.next
-        node.prev = self.head
-        self.head.next.prev = node
-        self.head.next = node",
+HELPER: Remove Tail
+  1. Get tail.prev (actual last node)
+  2. Remove it from list
+  3. Return its key (for hash map removal)",
                 resources: ToJson(new object[] {
                     new { title = "LRU Cache - LeetCode", url = "https://leetcode.com/problems/lru-cache/", type = "problem" },
                     new { title = "LRU Cache Design", url = "https://www.geeksforgeeks.org/lru-cache-implementation/", type = "article" }
@@ -2260,53 +2649,60 @@ Cons:
 - More space than BST
 - Cache-unfriendly",
                 commonUseCases: ToJson(new[] { "Redis sorted sets", "LevelDB/RocksDB", "Concurrent data structures", "In-memory indexes" }),
-                implementation: @"import random
+                implementation: @"SKIP LIST OPERATIONS
 
-class SkipListNode:
-    def __init__(self, val, level):
-        self.val = val
-        self.forward = [None] * (level + 1)
+STRUCTURE
+  Each node contains:
+    - value: The stored data
+    - forward[]: Array of pointers to next nodes at each level
 
-class SkipList:
-    def __init__(self, max_level=16, p=0.5):
-        self.max_level = max_level
-        self.p = p
-        self.level = 0
-        self.head = SkipListNode(float('-inf'), max_level)
+  Head node: Sentinel with value -∞ and max_level pointers
+  Parameters: max_level (typically 16), probability p (typically 0.5)
 
-    def random_level(self):
-        level = 0
-        while random.random() < self.p and level < self.max_level:
-            level += 1
-        return level
+RANDOM_LEVEL ()
+  1. Start with level = 0
+  2. While random() < p AND level < max_level:
+     a. Increment level
+  3. Return level
+  Note: Creates geometric distribution of levels
+  Time: O(log n) expected
 
-    def search(self, target):
-        current = self.head
-        for i in range(self.level, -1, -1):
-            while current.forward[i] and current.forward[i].val < target:
-                current = current.forward[i]
-        current = current.forward[0]
-        return current and current.val == target
+SEARCH (target)
+  1. Start at head, level = current max level
+  2. For each level from top to bottom:
+     a. While forward[level] exists AND forward[level].value < target:
+        - Move forward: current = current.forward[level]
+     b. Drop down one level
+  3. Move to forward[0] (bottom level)
+  4. Return true if current.value == target
+  Time: O(log n) expected
 
-    def insert(self, val):
-        update = [None] * (self.max_level + 1)
-        current = self.head
+INSERT (value)
+  1. Create update[] array to track predecessors at each level
+  2. Search path (like SEARCH), recording predecessor at each level:
+     For each level from top to bottom:
+       While forward[level] exists AND forward[level].value < value:
+         Move forward
+       update[level] = current position
+  3. Generate random level for new node
+  4. If new level > current max level:
+     a. For levels (max_level+1) to new_level:
+        update[level] = head
+     b. Update max level
+  5. Create new node with value and level
+  6. For each level 0 to new_level:
+     a. new_node.forward[level] = update[level].forward[level]
+     b. update[level].forward[level] = new_node
+  Time: O(log n) expected
 
-        for i in range(self.level, -1, -1):
-            while current.forward[i] and current.forward[i].val < val:
-                current = current.forward[i]
-            update[i] = current
-
-        level = self.random_level()
-        if level > self.level:
-            for i in range(self.level + 1, level + 1):
-                update[i] = self.head
-            self.level = level
-
-        new_node = SkipListNode(val, level)
-        for i in range(level + 1):
-            new_node.forward[i] = update[i].forward[i]
-            update[i].forward[i] = new_node",
+DELETE (value)
+  1. Search and record update[] array
+  2. If target found at bottom level:
+     a. For each level where node appears:
+        update[level].forward[level] = node.forward[level]
+     b. While max_level > 0 AND head.forward[max_level] is null:
+        Decrement max_level
+  Time: O(log n) expected",
                 resources: ToJson(new object[] {
                     new { title = "Skip List - Wikipedia", url = "https://en.wikipedia.org/wiki/Skip_list", type = "article" },
                     new { title = "Skip List Tutorial", url = "https://www.geeksforgeeks.org/skip-list/", type = "article" }
@@ -2339,39 +2735,53 @@ Cons:
 - More complex than simple queue
 - Only maintains one extreme",
                 commonUseCases: ToJson(new[] { "Sliding Window Maximum", "Shortest Subarray with Sum at Least K", "Jump Game VI", "Constrained Subsequence Sum" }),
-                implementation: @"from collections import deque
+                implementation: @"MONOTONIC QUEUE OPERATIONS (for Maximum queries)
 
-class MonotonicQueue:
-    '''Maintains decreasing order for max queries'''
-    def __init__(self):
-        self.dq = deque()  # Stores (value, index)
+STRUCTURE
+  Deque storing (value, index) pairs
+  Maintains DECREASING order from front to back
+  Front always contains current maximum
 
-    def push(self, val, idx):
-        # Remove smaller elements (they'll never be max)
-        while self.dq and self.dq[-1][0] <= val:
-            self.dq.pop()
-        self.dq.append((val, idx))
+  For MINIMUM queries: maintain INCREASING order instead
 
-    def pop_expired(self, left_bound):
-        # Remove elements outside window
-        while self.dq and self.dq[0][1] < left_bound:
-            self.dq.popleft()
+PUSH (value, index)
+  1. While deque not empty AND back element's value <= value:
+     a. Remove from back (these can never be max while new element exists)
+  2. Add (value, index) to back of deque
+  Time: O(1) amortized (each element pushed/popped at most once)
 
-    def get_max(self):
-        return self.dq[0][0] if self.dq else None
+POP_EXPIRED (left_bound)
+  1. While deque not empty AND front element's index < left_bound:
+     a. Remove from front (element is outside current window)
+  Time: O(1) amortized
 
-# Sliding window maximum
-def maxSlidingWindow(nums, k):
-    mq = MonotonicQueue()
-    result = []
+GET_MAX ()
+  1. Return front element's value (or null if empty)
+  Time: O(1)
 
-    for i, num in enumerate(nums):
-        mq.push(num, i)
-        mq.pop_expired(i - k + 1)
-        if i >= k - 1:
-            result.append(mq.get_max())
+---
 
-    return result",
+SLIDING WINDOW MAXIMUM ALGORITHM
+
+Input: array nums[], window size k
+Output: array of maximum values for each window position
+
+1. Initialize empty monotonic queue
+2. Initialize empty result array
+3. For i = 0 to length(nums) - 1:
+   a. PUSH(nums[i], i) into monotonic queue
+   b. POP_EXPIRED(i - k + 1) to remove elements outside window
+   c. If i >= k - 1 (window is full):
+      - Append GET_MAX() to result
+4. Return result
+
+Time: O(n) - each element pushed and popped at most once
+Space: O(k) - deque holds at most k elements
+
+KEY INSIGHT
+  When a larger element enters, smaller elements before it
+  can NEVER be the maximum while the larger element is in
+  the window. So we can safely discard them.",
                 resources: ToJson(new object[] {
                     new { title = "Sliding Window Maximum", url = "https://leetcode.com/problems/sliding-window-maximum/", type = "problem" },
                     new { title = "Monotonic Queue Explained", url = "https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/", type = "article" }
@@ -2408,34 +2818,60 @@ Cons:
 - Wasteful for sparse graphs
 - O(V) to find all neighbors",
                 commonUseCases: ToJson(new[] { "Floyd-Warshall", "Dense graph algorithms", "Small graphs", "Graph with many edge queries" }),
-                implementation: @"# Create adjacency matrix
-def create_adj_matrix(n, edges, directed=False):
-    matrix = [[0] * n for _ in range(n)]
-    for u, v in edges:
-        matrix[u][v] = 1
-        if not directed:
-            matrix[v][u] = 1
-    return matrix
+                implementation: @"ADJACENCY MATRIX OPERATIONS
 
-# Weighted graph
-def create_weighted_matrix(n, edges, directed=False):
-    INF = float('inf')
-    matrix = [[INF] * n for _ in range(n)]
-    for i in range(n):
-        matrix[i][i] = 0
-    for u, v, w in edges:
-        matrix[u][v] = w
-        if not directed:
-            matrix[v][u] = w
-    return matrix
+STRUCTURE
+  2D array matrix[V][V] where V = number of vertices
+  matrix[i][j] = 1 if edge from i to j exists (unweighted)
+  matrix[i][j] = weight if edge exists (weighted)
+  matrix[i][j] = 0 or ∞ if no edge
 
-# Check edge
-def has_edge(matrix, u, v):
-    return matrix[u][v] != 0  # or != INF for weighted
+INITIALIZE_UNWEIGHTED (n, edges[], directed)
+  1. Create n × n matrix, fill with 0
+  2. For each edge (u, v) in edges:
+     a. matrix[u][v] = 1
+     b. If undirected: matrix[v][u] = 1
+  Time: O(V² + E)
+  Space: O(V²)
 
-# Get neighbors
-def get_neighbors(matrix, u):
-    return [v for v in range(len(matrix)) if matrix[u][v] != 0]",
+INITIALIZE_WEIGHTED (n, edges[], directed)
+  1. Create n × n matrix, fill with ∞
+  2. For i = 0 to n-1:
+     a. matrix[i][i] = 0  (distance to self)
+  3. For each edge (u, v, weight) in edges:
+     a. matrix[u][v] = weight
+     b. If undirected: matrix[v][u] = weight
+  Time: O(V² + E)
+  Space: O(V²)
+
+HAS_EDGE (u, v)
+  1. Return matrix[u][v] ≠ 0 (unweighted)
+     OR matrix[u][v] ≠ ∞ (weighted)
+  Time: O(1)
+
+ADD_EDGE (u, v, weight=1, directed=false)
+  1. matrix[u][v] = weight
+  2. If undirected: matrix[v][u] = weight
+  Time: O(1)
+
+REMOVE_EDGE (u, v, directed=false)
+  1. matrix[u][v] = 0 (or ∞ for weighted)
+  2. If undirected: matrix[v][u] = 0 (or ∞)
+  Time: O(1)
+
+GET_NEIGHBORS (u)
+  1. Initialize empty list neighbors
+  2. For v = 0 to V-1:
+     a. If matrix[u][v] ≠ 0 (or ≠ ∞):
+        Add v to neighbors
+  3. Return neighbors
+  Time: O(V)
+
+GET_EDGE_WEIGHT (u, v)
+  1. Return matrix[u][v]
+  Time: O(1)
+
+BEST FOR: Dense graphs, Floyd-Warshall, frequent edge queries",
                 resources: ToJson(new object[] {
                     new { title = "Graph Representations", url = "https://www.geeksforgeeks.org/graph-and-its-representations/", type = "article" }
                 }),
@@ -2471,43 +2907,66 @@ Cons:
 - Loses old data when full
 - Slightly complex pointer management",
                 commonUseCases: ToJson(new[] { "Design Circular Queue", "Moving average from data stream", "Audio buffers", "Network packet buffers", "Log rotation" }),
-                implementation: @"class CircularBuffer:
-    def __init__(self, capacity):
-        self.buffer = [None] * capacity
-        self.capacity = capacity
-        self.head = 0  # Read position
-        self.tail = 0  # Write position
-        self.size = 0
+                implementation: @"CIRCULAR BUFFER (RING BUFFER) OPERATIONS
 
-    def is_empty(self):
-        return self.size == 0
+STRUCTURE
+  Fixed-size array buffer[capacity]
+  head: Index for reading (dequeue position)
+  tail: Index for writing (enqueue position)
+  size: Current number of elements
 
-    def is_full(self):
-        return self.size == self.capacity
+  Visual (capacity=5, 3 elements):
+  [_, A, B, C, _]
+      ^head   ^tail
 
-    def enqueue(self, val):
-        if self.is_full():
-            return False  # Or overwrite: self.head = (self.head + 1) % self.capacity
-        self.buffer[self.tail] = val
-        self.tail = (self.tail + 1) % self.capacity
-        self.size += 1
-        return True
+INITIALIZE (capacity)
+  1. Create array of size capacity
+  2. head = 0
+  3. tail = 0
+  4. size = 0
+  Time: O(capacity)
 
-    def dequeue(self):
-        if self.is_empty():
-            return None
-        val = self.buffer[self.head]
-        self.head = (self.head + 1) % self.capacity
-        self.size -= 1
-        return val
+IS_EMPTY ()
+  1. Return size == 0
+  Time: O(1)
 
-    def front(self):
-        return self.buffer[self.head] if not self.is_empty() else None
+IS_FULL ()
+  1. Return size == capacity
+  Time: O(1)
 
-    def rear(self):
-        if self.is_empty():
-            return None
-        return self.buffer[(self.tail - 1) % self.capacity]",
+ENQUEUE (value)
+  1. If IS_FULL():
+     a. Return false (or for overwrite mode: advance head)
+  2. buffer[tail] = value
+  3. tail = (tail + 1) % capacity    // Wrap around!
+  4. size = size + 1
+  5. Return true
+  Time: O(1)
+
+DEQUEUE ()
+  1. If IS_EMPTY(): Return null/error
+  2. value = buffer[head]
+  3. head = (head + 1) % capacity    // Wrap around!
+  4. size = size - 1
+  5. Return value
+  Time: O(1)
+
+FRONT (peek front)
+  1. If IS_EMPTY(): Return null
+  2. Return buffer[head]
+  Time: O(1)
+
+REAR (peek back)
+  1. If IS_EMPTY(): Return null
+  2. Return buffer[(tail - 1 + capacity) % capacity]
+     Note: Add capacity before mod to handle negative
+  Time: O(1)
+
+KEY INSIGHT: MODULO ARITHMETIC
+  The % operator creates the ""wrap around"" behavior:
+  - If tail reaches end, (tail + 1) % capacity wraps to 0
+  - Buffer acts like a circle, not a line
+  - No shifting needed, O(1) operations",
                 resources: ToJson(new object[] {
                     new { title = "Design Circular Queue - LeetCode", url = "https://leetcode.com/problems/design-circular-queue/", type = "problem" },
                     new { title = "Circular Buffer - Wikipedia", url = "https://en.wikipedia.org/wiki/Circular_buffer", type = "article" }
