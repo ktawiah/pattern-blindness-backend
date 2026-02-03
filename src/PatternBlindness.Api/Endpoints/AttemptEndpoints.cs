@@ -588,7 +588,10 @@ public static class AttemptEndpoints
     };
 
     // Complete the LeetCode attempt so it counts in dashboard analytics
-    attempt.CompleteLeetCodeAttempt(reflectionResult.IsCorrectPattern, confidenceLevel);
+    var completionResult = attempt.CompleteLeetCodeAttempt(reflectionResult.IsCorrectPattern, confidenceLevel);
+    if (completionResult.IsFailure)
+      return TypedResults.BadRequest(new ProblemDetails { Detail = $"Failed to complete attempt: {completionResult.Error.Message}" });
+
     await attemptRepository.UpdateAsync(attempt, ct);
 
     return TypedResults.Ok(MapToReflectionResponse(reflection));

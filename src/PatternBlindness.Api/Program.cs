@@ -122,6 +122,7 @@ app.MapHealthChecks("/health");
 // Map API endpoints
 app.MapAuthEndpoints();
 app.MapPatternEndpoints();
+app.MapPatternTrackingEndpoints();
 app.MapDataStructureEndpoints();
 app.MapProblemEndpoints();
 app.MapAttemptEndpoints();

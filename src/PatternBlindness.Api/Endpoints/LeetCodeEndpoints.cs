@@ -5,6 +5,15 @@ using PatternBlindness.Domain.Entities;
 
 namespace PatternBlindness.Api.Endpoints;
 
+// JSON serializer options for camelCase (to match frontend expectations)
+internal static class JsonOptions
+{
+  public static readonly JsonSerializerOptions CamelCase = new()
+  {
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+  };
+}
+
 /// <summary>
 /// Endpoints for LeetCode integration.
 /// </summary>
@@ -178,13 +187,13 @@ public static class LeetCodeEndpoints
       return TypedResults.StatusCode(503);
     }
 
-    // Save analysis
+    // Save analysis - use camelCase for KeySignals and CommonMistakes to match frontend expectations
     var analysis = ProblemAnalysis.Create(
         cached.Id,
         JsonSerializer.Serialize(analysisResult.PrimaryPatterns),
         JsonSerializer.Serialize(analysisResult.SecondaryPatterns),
-        JsonSerializer.Serialize(analysisResult.KeySignals),
-        JsonSerializer.Serialize(analysisResult.CommonMistakes),
+        JsonSerializer.Serialize(analysisResult.KeySignals, JsonOptions.CamelCase),
+        JsonSerializer.Serialize(analysisResult.CommonMistakes, JsonOptions.CamelCase),
         analysisResult.TimeComplexity,
         analysisResult.SpaceComplexity,
         analysisResult.KeyInsight,

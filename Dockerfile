@@ -1,6 +1,6 @@
 # Runtime-only Dockerfile
 # Build locally first with: dotnet publish src/PatternBlindness.Api/PatternBlindness.Api.csproj -c Release -o publish
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # Copy pre-built publish output

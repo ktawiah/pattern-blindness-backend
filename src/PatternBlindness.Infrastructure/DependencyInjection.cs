@@ -44,6 +44,9 @@ public static class DependencyInjection
     // Register LLM service
     services.AddScoped<ILlmService, OpenAiLlmService>();
 
+    // Register pattern tracking service
+    services.AddScoped<IPatternTrackingService, PatternTrackingService>();
+
     return services;
   }
 }
