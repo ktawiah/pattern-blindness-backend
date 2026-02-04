@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AspNet.Security.OAuth.GitHub;
@@ -37,17 +36,6 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
 
 // Configure OAuth providers (optional - only if credentials are provided)
 var authBuilder = builder.Services.AddAuthentication();
-
-var googleClientId = builder.Configuration["OAuth:Google:ClientId"];
-var googleClientSecret = builder.Configuration["OAuth:Google:ClientSecret"];
-if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
-{
-    authBuilder.AddGoogle(options =>
-    {
-        options.ClientId = googleClientId;
-        options.ClientSecret = googleClientSecret;
-    });
-}
 
 var githubClientId = builder.Configuration["OAuth:GitHub:ClientId"];
 var githubClientSecret = builder.Configuration["OAuth:GitHub:ClientSecret"];

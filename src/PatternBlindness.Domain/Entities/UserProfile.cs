@@ -57,6 +57,7 @@ public class UserProfile : Entity
 
     /// <summary>
     /// Creates a new user profile for qualification.
+    /// NOTE: All users are now auto-qualified. The DSA problems count is tracked for informational purposes only.
     /// </summary>
     public static UserProfile Create(string userId, int dsaProblemsCompleted)
     {
@@ -66,7 +67,8 @@ public class UserProfile : Entity
         if (dsaProblemsCompleted < 0)
             throw new ArgumentException("DSA problems completed cannot be negative.", nameof(dsaProblemsCompleted));
 
-        var isQualified = dsaProblemsCompleted >= 50;
+        // Auto-qualify everyone - no gate
+        var isQualified = true;
 
         return new UserProfile
         {
@@ -74,7 +76,7 @@ public class UserProfile : Entity
             UserId = userId,
             DsaProblemsCompleted = dsaProblemsCompleted,
             IsQualified = isQualified,
-            QualifiedAt = isQualified ? DateTime.UtcNow : null,
+            QualifiedAt = DateTime.UtcNow,
             CurrentPhase = 1,
             CompletedAttempts = 0,
             WasGrandfathered = false,

@@ -89,22 +89,8 @@ public static class UserProfileEndpoints
             });
         }
 
-        // Create new profile
+        // Create new profile (everyone is auto-qualified now)
         var profile = UserProfile.Create(userId, request.DsaProblemsCompleted);
-
-        // Check qualification threshold
-        if (!profile.IsQualified)
-        {
-            // Still save the profile but return a message about not qualifying
-            await profileRepository.AddAsync(profile, ct);
-            return TypedResults.BadRequest(new ProblemDetails
-            {
-                Title = "Insufficient Experience",
-                Detail = "This tool is designed for engineers who have solved at least 50 DSA problems. " +
-                         "We recommend practicing more on LeetCode, HackerRank, or similar platforms first. " +
-                         "This isn't a coding practice tool - it trains pattern recognition for those who already have a foundation."
-            });
-        }
 
         await profileRepository.AddAsync(profile, ct);
         var response = MapToResponse(profile);
@@ -119,29 +105,24 @@ public static class UserProfileEndpoints
         var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
+            // Still qualified, but suggest filling out profile
             return TypedResults.Ok(new QualificationCheckResponse(
-                IsQualified: false,
+                IsQualified: true,
                 NeedsQualification: true,
-                Message: "Please complete qualification to access the platform."));
+                Message: "Consider telling us about your experience level (optional)."));
         }
 
         var profile = await profileRepository.GetByUserIdAsync(userId, ct);
         if (profile is null)
         {
+            // No profile yet, but still qualified
             return TypedResults.Ok(new QualificationCheckResponse(
-                IsQualified: false,
+                IsQualified: true,
                 NeedsQualification: true,
-                Message: "Please complete qualification to access the platform."));
+                Message: "Consider telling us about your experience level (optional)."));
         }
 
-        if (!profile.IsQualified)
-        {
-            return TypedResults.Ok(new QualificationCheckResponse(
-                IsQualified: false,
-                NeedsQualification: false, // Already submitted but didn't qualify
-                Message: "This tool requires 50+ DSA problems solved. Please build your foundation first."));
-        }
-
+        // Everyone is qualified now
         return TypedResults.Ok(new QualificationCheckResponse(
             IsQualified: true,
             NeedsQualification: false,

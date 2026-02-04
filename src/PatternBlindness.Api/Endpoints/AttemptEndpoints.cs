@@ -314,7 +314,7 @@ public static class AttemptEndpoints
     attempt.GiveUp();
     await attemptRepository.UpdateAsync(attempt, ct);
 
-    var response = MapToResponse(attempt, attempt.Problem?.Title ?? "");
+    var response = MapToResponse(attempt, attempt.Problem?.Title ?? attempt.LeetCodeProblem?.Title ?? "");
     return TypedResults.Ok(response);
   }
 
@@ -393,7 +393,7 @@ public static class AttemptEndpoints
     var attempts = await attemptRepository.GetByUserIdAsync(userId, ct);
 
     var responses = attempts
-        .Select(a => MapToResponse(a, a.Problem?.Title ?? ""))
+        .Select(a => MapToResponse(a, a.Problem?.Title ?? a.LeetCodeProblem?.Title ?? ""))
         .ToList();
 
     return TypedResults.Ok<IReadOnlyList<AttemptResponse>>(responses);
