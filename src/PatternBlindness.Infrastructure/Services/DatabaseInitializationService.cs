@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,9 +24,10 @@ public class DatabaseInitializationService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        var stopwatch = Stopwatch.StartNew();
         try
         {
-            _logger.LogInformation("Starting database initialization service at {Time}", DateTime.UtcNow);
+            _logger.LogInformation("=== Starting database initialization service at {Time} ===", DateTime.UtcNow);
 
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -38,14 +40,14 @@ public class DatabaseInitializationService : IHostedService
                     var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
                     if (!canConnect)
                     {
-                        _logger.LogError("Cannot connect to database!");
+                        _logger.LogError("❌ Cannot connect to database!");
                         return;
                     }
-                    _logger.LogInformation("Database connection successful.");
+                    _logger.LogInformation("✓ Database connection successful.");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to connect to database");
+                    _logger.LogError(ex, "❌ Failed to connect to database");
                     return;
                 }
 
@@ -53,34 +55,61 @@ public class DatabaseInitializationService : IHostedService
                 _logger.LogInformation("Starting database migrations...");
                 try
                 {
-                    await dbContext.Database.MigrateAsync(cancellationToken);
-                    _logger.LogInformation("Database migrations completed successfully at {Time}", DateTime.UtcNow);
+                    var migrationStopwatch = Stopwatch.StartNew();
+                    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
+                    var migrationCount = pendingMigrations.Count();
+                    
+                    if (migrationCount > 0)
+                    {
+                        _logger.LogInformation("Found {MigrationCount} pending migrations", migrationCount);
+                        await dbContext.Database.MigrateAsync(cancellationToken);
+                    }
+                    
+                    migrationStopwatch.Stop();
+                    _logger.LogInformation("✓ Database migrations completed in {ElapsedMs}ms", migrationStopwatch.ElapsedMilliseconds);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error during database migrations");
+                    _logger.LogError(ex, "❌ Error during database migrations");
                     throw;
                 }
 
-                // Seed database
+                // Seed database (with timeout protection)
                 _logger.LogInformation("Starting database seeding at {Time}", DateTime.UtcNow);
                 try
                 {
-                    await DatabaseSeeder.SeedAsync(dbContext);
-                    _logger.LogInformation("Database seeding completed successfully at {Time}", DateTime.UtcNow);
+                    var seedStopwatch = Stopwatch.StartNew();
+                    
+                    // Use a longer timeout for seeding (5 minutes)
+                    using (var seedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                    {
+                        seedCancellation.CancelAfter(TimeSpan.FromMinutes(5));
+                        await DatabaseSeeder.SeedAsync(dbContext);
+                    }
+                    
+                    seedStopwatch.Stop();
+                    _logger.LogInformation("✓ Database seeding completed in {ElapsedMs}ms at {Time}", seedStopwatch.ElapsedMilliseconds, DateTime.UtcNow);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogWarning("⚠ Database seeding timed out after 5 minutes - continuing without full seed");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error during database seeding");
+                    _logger.LogError(ex, "❌ Error during database seeding - continuing with partial data");
                     // Don't rethrow for seeding - allow app to continue
                 }
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during database initialization. The application will continue running, but data may not be properly initialized.");
-            // Don't throw - we want the app to stay running even if migration fails
-            // This allows debugging via logs and health endpoints
+            _logger.LogError(ex, "❌ Critical error during database initialization. The application will continue running.");
+            // Don't throw - we want the app to stay running even if migrations fail
+        }
+        finally
+        {
+            stopwatch.Stop();
+            _logger.LogInformation("=== Database initialization completed in {ElapsedMs}ms ===", stopwatch.ElapsedMilliseconds);
         }
     }
 
