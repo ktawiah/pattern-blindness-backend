@@ -47,6 +47,10 @@ public static class DependencyInjection
     // Register pattern tracking service
     services.AddScoped<IPatternTrackingService, PatternTrackingService>();
 
+    // Register database initialization hosted service
+    // This handles migrations and seeding after app startup
+    services.AddHostedService<DatabaseInitializationService>();
+
     return services;
   }
 }

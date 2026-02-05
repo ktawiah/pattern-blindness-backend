@@ -120,14 +120,6 @@ app.MapUserProfileEndpoints();
 // Root redirect to Swagger
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
-// Apply migrations and seed database on startup
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await dbContext.Database.MigrateAsync();
-    await DatabaseSeeder.SeedAsync(dbContext);
-}
-
 app.Run();
 
 // Make Program class partial for integration tests
