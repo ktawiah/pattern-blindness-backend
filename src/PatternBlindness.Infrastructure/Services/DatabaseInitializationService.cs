@@ -25,27 +25,61 @@ public class DatabaseInitializationService : IHostedService
     {
         try
         {
-            _logger.LogInformation("Starting database initialization service...");
+            _logger.LogInformation("Starting database initialization service at {Time}", DateTime.UtcNow);
 
             using (var scope = _serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+                // Test database connection first
+                _logger.LogInformation("Testing database connection...");
+                try
+                {
+                    var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
+                    if (!canConnect)
+                    {
+                        _logger.LogError("Cannot connect to database!");
+                        return;
+                    }
+                    _logger.LogInformation("Database connection successful.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to connect to database");
+                    return;
+                }
+
                 // Run migrations
-                _logger.LogInformation("Running database migrations...");
-                await dbContext.Database.MigrateAsync(cancellationToken);
-                _logger.LogInformation("Database migrations completed successfully.");
+                _logger.LogInformation("Starting database migrations...");
+                try
+                {
+                    await dbContext.Database.MigrateAsync(cancellationToken);
+                    _logger.LogInformation("Database migrations completed successfully at {Time}", DateTime.UtcNow);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during database migrations");
+                    throw;
+                }
 
                 // Seed database
-                _logger.LogInformation("Starting database seeding...");
-                await DatabaseSeeder.SeedAsync(dbContext);
-                _logger.LogInformation("Database seeding completed successfully.");
+                _logger.LogInformation("Starting database seeding at {Time}", DateTime.UtcNow);
+                try
+                {
+                    await DatabaseSeeder.SeedAsync(dbContext);
+                    _logger.LogInformation("Database seeding completed successfully at {Time}", DateTime.UtcNow);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during database seeding");
+                    // Don't rethrow for seeding - allow app to continue
+                }
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during database initialization. The application will continue running, but data may not be properly initialized.");
-            // Don't throw - we want the app to stay running even if seeding fails
+            // Don't throw - we want the app to stay running even if migration fails
             // This allows debugging via logs and health endpoints
         }
     }
