@@ -33,7 +33,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
-
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "PatternBlindness.Api.dll"]
