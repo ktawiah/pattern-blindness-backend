@@ -37,6 +37,6 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
       - name: Run migrations
-        run: dotnet ef database update --project src/PatternBlindness.Infrastructure/PatternBlindness.Infrastructure.csproj
+        run: dotnet ef database update --project src/PatternBlindness.Infrastructure/PatternBlindness.Infrastructure.csproj --startup-project src/PatternBlindness.Api/PatternBlindness.Api.csproj
       - name: Test
         run: dotnet test --no-build --verbosity normal
