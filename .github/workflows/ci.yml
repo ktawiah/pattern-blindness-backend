@@ -32,13 +32,9 @@ jobs:
           dotnet-version: "9.0.x"
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: src
       - name: Build
         run: dotnet build --no-restore --configuration Release
-        working-directory: src
       - name: Run migrations
-        run: dotnet ef database update --project PatternBlindness.Infrastructure/PatternBlindness.Infrastructure.csproj
-        working-directory: src
+        run: dotnet ef database update --project src/PatternBlindness.Infrastructure/PatternBlindness.Infrastructure.csproj
       - name: Test
         run: dotnet test --no-build --verbosity normal
-        working-directory: src
