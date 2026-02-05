@@ -75,6 +75,12 @@ public class DatabaseInitializationService : IHostedService
                 }
 
                 // Seed database (with timeout protection)
+                // TEMPORARILY DISABLED: Seeding was causing database query timeouts
+                // The seed data is too large (2979+ patterns with mega JSON fields)
+                // TODO: Implement batch seeding, admin endpoint, or incremental seeding
+                _logger.LogWarning("⚠ Database seeding is disabled - application will run without seed data");
+                _logger.LogInformation("To enable seeding, create an admin endpoint to manually trigger DatabaseSeeder.SeedAsync(dbContext)");
+                /*
                 _logger.LogInformation("Starting database seeding at {Time}", DateTime.UtcNow);
                 try
                 {
@@ -99,6 +105,7 @@ public class DatabaseInitializationService : IHostedService
                     _logger.LogError(ex, "❌ Error during database seeding - continuing with partial data");
                     // Don't rethrow for seeding - allow app to continue
                 }
+                */
             }
         }
         catch (Exception ex)
