@@ -1,6 +1,6 @@
 # Pattern Blindness Backend
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/PatternBlindness/.github%2Fworkflows%2Fci.yml?branch=main)](https://github.com/yourusername/PatternBlindness/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ktawiah/pattern-blindness-backend/.github%2Fworkflows%2Fci.yml?branch=main)](https://github.com/ktawiah/PatternBlindness/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![.NET 9.0](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/download)
 
