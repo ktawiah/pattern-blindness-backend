@@ -85,37 +85,30 @@ public class DatabaseInitializationService : IHostedService
         }
 
         // Seed database (with timeout protection)
-        // TEMPORARILY DISABLED: Seeding was causing database query timeouts
-        // The seed data is too large (2979+ patterns with mega JSON fields)
-        // TODO: Implement batch seeding, admin endpoint, or incremental seeding
-        _logger.LogWarning("⚠ Database seeding is disabled - application will run without seed data");
-        _logger.LogInformation("To enable seeding, create an admin endpoint to manually trigger DatabaseSeeder.SeedAsync(dbContext)");
-        /*
         _logger.LogInformation("Starting database seeding at {Time}", DateTime.UtcNow);
         try
         {
-            var seedStopwatch = Stopwatch.StartNew();
+          var seedStopwatch = Stopwatch.StartNew();
 
-            // Use a longer timeout for seeding (5 minutes)
-            using (var seedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
-            {
-                seedCancellation.CancelAfter(TimeSpan.FromMinutes(5));
-                await DatabaseSeeder.SeedAsync(dbContext);
-            }
 
-            seedStopwatch.Stop();
-            _logger.LogInformation("✓ Database seeding completed in {ElapsedMs}ms at {Time}", seedStopwatch.ElapsedMilliseconds, DateTime.UtcNow);
+          using (var seedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+          {
+            seedCancellation.CancelAfter(TimeSpan.FromMinutes(10));
+            await DatabaseSeeder.SeedAsync(dbContext);
+          }
+
+          seedStopwatch.Stop();
+          _logger.LogInformation("✓ Database seeding completed in {ElapsedMs}ms at {Time}", seedStopwatch.ElapsedMilliseconds, DateTime.UtcNow);
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning("⚠ Database seeding timed out after 5 minutes - continuing without full seed");
+          _logger.LogWarning("⚠ Database seeding timed out after 10 minutes - continuing without full seed");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "❌ Error during database seeding - continuing with partial data");
-            // Don't rethrow for seeding - allow app to continue
+          _logger.LogError(ex, "❌ Error during database seeding - continuing with partial data");
+          // Don't rethrow for seeding - allow app to continue
         }
-        */
       }
     }
     catch (Exception ex)

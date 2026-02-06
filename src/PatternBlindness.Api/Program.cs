@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
+using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using AspNet.Security.OAuth.GitHub;
 using PatternBlindness.Api.Endpoints;
 using PatternBlindness.Infrastructure;
 using PatternBlindness.Infrastructure.Data;
@@ -141,7 +141,7 @@ app.MapGet("/api/diagnostic", (IServiceProvider services) =>
 {
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
     var connString = dbContext.Database.GetConnectionString() ?? "NO CONNECTION STRING";
-    
+
     // Sanitize for display
     var sanitized = System.Text.RegularExpressions.Regex.Replace(
         connString,
@@ -149,8 +149,8 @@ app.MapGet("/api/diagnostic", (IServiceProvider services) =>
         "Password=***REDACTED***",
         System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-    return Results.Ok(new 
-    { 
+    return Results.Ok(new
+    {
         environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown",
         connectionStringLoaded = !string.IsNullOrEmpty(connString),
         connectionString = sanitized,
