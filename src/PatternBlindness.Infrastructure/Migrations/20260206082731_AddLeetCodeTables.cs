@@ -10,6 +10,20 @@ namespace PatternBlindness.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // First, add missing columns to Attempts table if they don't exist
+            migrationBuilder.AddColumn<Guid>(
+                name: "LeetCodeProblemCacheId",
+                table: "Attempts",
+                type: "uuid",
+                nullable: true);
+
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "ChosenPatternId",
+                table: "Attempts",
+                type: "uuid",
+                nullable: true);
+
             // Create LeetCodeProblemCache table
             migrationBuilder.CreateTable(
                 name: "LeetCodeProblemCache",
