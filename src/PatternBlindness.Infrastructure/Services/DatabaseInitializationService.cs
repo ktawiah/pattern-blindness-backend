@@ -84,8 +84,8 @@ public class DatabaseInitializationService : IHostedService
           throw;
         }
 
-        // Ensure missing columns exist using raw SQL (safety net for incomplete migrations)
-        _logger.LogInformation("Ensuring all required columns exist...");
+        // Ensure missing tables and columns exist using raw SQL (safety net for incomplete migrations)
+        _logger.LogInformation("Ensuring all required tables and columns exist...");
         try
         {
           var connection = dbContext.Database.GetDbConnection();
@@ -93,51 +93,133 @@ public class DatabaseInitializationService : IHostedService
 
           using (var command = connection.CreateCommand())
           {
-            // First, ensure tables and their columns exist
-            var sqlStatements = new[]
-            {
-              // LeetCodeProblemCache table columns
-              @"ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN IF NOT EXISTS ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;",
-              @"ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone;",
-              @"ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN IF NOT EXISTS ""Slug"" character varying(200);",
-              
-              // ProblemAnalyses table columns  
-              @"ALTER TABLE ""ProblemAnalyses"" ADD COLUMN IF NOT EXISTS ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;",
-              @"ALTER TABLE ""ProblemAnalyses"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone;",
-              
-              // Reflections table columns
-              @"ALTER TABLE ""Reflections"" ADD COLUMN IF NOT EXISTS ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;",
-              @"ALTER TABLE ""Reflections"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone;",
-              
-              // Attempts table columns
-              @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ChosenPatternName"" character varying(100);",
-              @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ChosenPatternId"" uuid;",
-              @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ProblemId"" uuid;",
-              
-              // ColdStartSubmissions table columns
-              @"ALTER TABLE ""ColdStartSubmissions"" ADD COLUMN IF NOT EXISTS ""IdentifiedSignals"" jsonb DEFAULT '[]';"
-            };
+            // Use SQL to create missing tables completely if they don't exist
+            var sqlScript = @"
+DO $$
+BEGIN
+  -- Create LeetCodeProblemCache table if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'LeetCodeProblemCache') THEN
+    CREATE TABLE ""LeetCodeProblemCache"" (
+      ""Id"" uuid NOT NULL PRIMARY KEY,
+      ""LeetCodeId"" character varying(50),
+      ""FrontendId"" character varying(20),
+      ""Title"" character varying(500),
+      ""TitleSlug"" character varying(500),
+      ""Difficulty"" character varying(20),
+      ""Content"" text,
+      ""Tags"" jsonb DEFAULT '[]',
+      ""Examples"" jsonb DEFAULT '[]',
+      ""Hints"" jsonb DEFAULT '[]',
+      ""AcceptanceRate"" double precision,
+      ""CachedAt"" timestamp with time zone,
+      ""LastRefreshedAt"" timestamp with time zone,
+      ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+      ""UpdatedAt"" timestamp with time zone
+    );
+  END IF;
 
-            foreach (var sql in sqlStatements)
-            {
-              try
-              {
-                command.CommandText = sql;
-                await command.ExecuteNonQueryAsync(cancellationToken);
-                _logger.LogInformation("✓ Executed: {Sql}", sql.Substring(0, Math.Min(60, sql.Length)) + "...");
-              }
-              catch (Exception colEx)
-              {
-                _logger.LogWarning(colEx, "Column may already exist or non-critical error: {Message}", colEx.Message);
-              }
-            }
+  -- Create ProblemAnalyses table if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'ProblemAnalyses') THEN
+    CREATE TABLE ""ProblemAnalyses"" (
+      ""Id"" uuid NOT NULL PRIMARY KEY,
+      ""LeetCodeProblemCacheId"" uuid,
+      ""PrimaryPatterns"" jsonb DEFAULT '[]',
+      ""SecondaryPatterns"" jsonb DEFAULT '[]',
+      ""KeySignals"" jsonb DEFAULT '[]',
+      ""CommonMistakes"" jsonb DEFAULT '[]',
+      ""TimeComplexity"" character varying(100),
+      ""SpaceComplexity"" character varying(100),
+      ""KeyInsight"" character varying(2000),
+      ""ApproachExplanation"" text,
+      ""SimilarProblems"" jsonb DEFAULT '[]',
+      ""ModelUsed"" character varying(100),
+      ""AnalyzedAt"" timestamp with time zone,
+      ""RawLlmResponse"" text,
+      ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+      ""UpdatedAt"" timestamp with time zone
+    );
+  END IF;
+
+  -- Create Reflections table if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'Reflections') THEN
+    CREATE TABLE ""Reflections"" (
+      ""Id"" uuid NOT NULL PRIMARY KEY,
+      ""AttemptId"" uuid,
+      ""UserColdStartSummary"" character varying(2000),
+      ""WasPatternCorrect"" boolean DEFAULT false,
+      ""Feedback"" text,
+      ""CorrectIdentifications"" jsonb DEFAULT '[]',
+      ""MissedSignals"" jsonb DEFAULT '[]',
+      ""NextTimeAdvice"" character varying(2000),
+      ""PatternTips"" character varying(2000),
+      ""ConfidenceCalibration"" character varying(1000),
+      ""ModelUsed"" character varying(100),
+      ""GeneratedAt"" timestamp with time zone,
+      ""RawLlmResponse"" text,
+      ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+      ""UpdatedAt"" timestamp with time zone
+    );
+  END IF;
+
+  -- Add missing columns to Attempts if they don't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Attempts' AND column_name = 'LeetCodeProblemCacheId') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""LeetCodeProblemCacheId"" uuid;
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Attempts' AND column_name = 'ChosenPatternName') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""ChosenPatternName"" character varying(100);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Attempts' AND column_name = 'ChosenPatternId') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""ChosenPatternId"" uuid;
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Attempts' AND column_name = 'ProblemId') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""ProblemId"" uuid;
+  END IF;
+
+  -- Add missing columns to ColdStartSubmissions if they don't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ColdStartSubmissions' AND column_name = 'IdentifiedSignals') THEN
+    ALTER TABLE ""ColdStartSubmissions"" ADD COLUMN ""IdentifiedSignals"" jsonb DEFAULT '[]';
+  END IF;
+
+  -- Add missing columns to LeetCodeProblemCache if table exists
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'LeetCodeProblemCache' AND column_name = 'CreatedAt') THEN
+    ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'LeetCodeProblemCache' AND column_name = 'UpdatedAt') THEN
+    ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN ""UpdatedAt"" timestamp with time zone;
+  END IF;
+
+  -- Add missing columns to ProblemAnalyses if table exists
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ProblemAnalyses' AND column_name = 'CreatedAt') THEN
+    ALTER TABLE ""ProblemAnalyses"" ADD COLUMN ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ProblemAnalyses' AND column_name = 'UpdatedAt') THEN
+    ALTER TABLE ""ProblemAnalyses"" ADD COLUMN ""UpdatedAt"" timestamp with time zone;
+  END IF;
+
+  -- Add missing columns to Reflections if table exists
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Reflections' AND column_name = 'CreatedAt') THEN
+    ALTER TABLE ""Reflections"" ADD COLUMN ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Reflections' AND column_name = 'UpdatedAt') THEN
+    ALTER TABLE ""Reflections"" ADD COLUMN ""UpdatedAt"" timestamp with time zone;
+  END IF;
+END $$;
+";
+
+            command.CommandText = sqlScript;
+            await command.ExecuteNonQueryAsync(cancellationToken);
+            _logger.LogInformation("✓ Database schema safety check completed successfully");
           }
-
-          _logger.LogInformation("✓ Column safety check completed");
         }
         catch (Exception ex)
         {
-          _logger.LogError(ex, "⚠ Error during column safety check - continuing anyway");
+          _logger.LogError(ex, "⚠ Error during schema safety check - this may cause API errors");
         }
 
         // Seed database (with timeout protection)
