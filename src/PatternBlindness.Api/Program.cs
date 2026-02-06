@@ -136,6 +136,28 @@ app.MapUserProfileEndpoints();
 // Root redirect to Swagger
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
+// Diagnostic endpoint - shows environment info (temporary, for debugging)
+app.MapGet("/api/diagnostic", (IServiceProvider services) =>
+{
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var connString = dbContext.Database.GetConnectionString() ?? "NO CONNECTION STRING";
+    
+    // Sanitize for display
+    var sanitized = System.Text.RegularExpressions.Regex.Replace(
+        connString,
+        @"Password=([^;]*)",
+        "Password=***REDACTED***",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    return Results.Ok(new 
+    { 
+        environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown",
+        connectionStringLoaded = !string.IsNullOrEmpty(connString),
+        connectionString = sanitized,
+        timestamp = DateTime.UtcNow
+    });
+});
+
 app.Run();
 
 // Make Program class partial for integration tests
