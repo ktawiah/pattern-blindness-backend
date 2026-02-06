@@ -84,6 +84,46 @@ public class DatabaseInitializationService : IHostedService
           throw;
         }
 
+        // Ensure missing columns exist using raw SQL (safety net for incomplete migrations)
+        _logger.LogInformation("Ensuring all required columns exist...");
+        try
+        {
+          var connection = dbContext.Database.GetDbConnection();
+          await connection.OpenAsync(cancellationToken);
+
+          using (var command = connection.CreateCommand())
+          {
+            // These are safe no-ops if columns already exist
+            var sqlStatements = new[]
+            {
+              @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ChosenPatternName"" character varying(100);",
+              @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ChosenPatternId"" uuid;",
+              @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ProblemId"" uuid;",
+              @"ALTER TABLE ""ColdStartSubmissions"" ADD COLUMN IF NOT EXISTS ""IdentifiedSignals"" jsonb DEFAULT '[]';"
+            };
+
+            foreach (var sql in sqlStatements)
+            {
+              try
+              {
+                command.CommandText = sql;
+                await command.ExecuteNonQueryAsync(cancellationToken);
+                _logger.LogInformation("✓ Executed: {Sql}", sql.Substring(0, Math.Min(60, sql.Length)) + "...");
+              }
+              catch (Exception colEx)
+              {
+                _logger.LogWarning(colEx, "Column may already exist or non-critical error: {Message}", colEx.Message);
+              }
+            }
+          }
+
+          _logger.LogInformation("✓ Column safety check completed");
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "⚠ Error during column safety check - continuing anyway");
+        }
+
         // Seed database (with timeout protection)
         _logger.LogInformation("Starting database seeding at {Time}", DateTime.UtcNow);
         try
