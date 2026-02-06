@@ -57,7 +57,7 @@ public class DatabaseInitializationService : IHostedService
         }
         catch (Exception ex)
         {
-          _logger.LogError(ex, "❌ Failed to connect to database. Connection error: {ErrorMessage}", ex.Message);
+          _logger.LogError(ex, "Failed to connect to database. Connection error: {ErrorMessage}", ex.Message);
           return;
         }
 
