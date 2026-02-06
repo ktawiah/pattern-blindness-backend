@@ -10,16 +10,37 @@ namespace PatternBlindness.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // First, add missing columns to Attempts table if they don't exist
+            // Add missing columns to Attempts table
             migrationBuilder.AddColumn<Guid>(
                 name: "LeetCodeProblemCacheId",
                 table: "Attempts",
                 type: "uuid",
                 nullable: true);
 
+            migrationBuilder.AddColumn<string>(
+                name: "ChosenPatternName",
+                table: "Attempts",
+                type: "character varying(100)",
+                maxLength: 100,
+                nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "ChosenPatternId",
+                table: "Attempts",
+                type: "uuid",
+                nullable: true);
+
+            // Add missing columns to ColdStartSubmissions if needed
+            migrationBuilder.AddColumn<string>(
+                name: "IdentifiedSignals",
+                table: "ColdStartSubmissions",
+                type: "jsonb",
+                nullable: false,
+                defaultValue: "[]");
+
+            // Add missing column to Attempts if needed
+            migrationBuilder.AddColumn<Guid>(
+                name: "ProblemId",
                 table: "Attempts",
                 type: "uuid",
                 nullable: true);
@@ -184,6 +205,22 @@ namespace PatternBlindness.Infrastructure.Migrations
             migrationBuilder.DropColumn(
                 name: "LeetCodeProblemCacheId",
                 table: "Attempts");
+
+            migrationBuilder.DropColumn(
+                name: "ChosenPatternName",
+                table: "Attempts");
+
+            migrationBuilder.DropColumn(
+                name: "ChosenPatternId",
+                table: "Attempts");
+
+            migrationBuilder.DropColumn(
+                name: "ProblemId",
+                table: "Attempts");
+
+            migrationBuilder.DropColumn(
+                name: "IdentifiedSignals",
+                table: "ColdStartSubmissions");
         }
     }
 }
