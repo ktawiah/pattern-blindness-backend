@@ -102,9 +102,29 @@ builder.Services.AddCors(options =>
 // Health checks
 builder.Services.AddHealthChecks();
 
+// Add exception handling middleware
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = ctx =>
+    {
+        ctx.ProblemDetails.Instance = $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}";
+        
+        var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+        
+        if (ctx.Exception is not null)
+        {
+            logger.LogError(ctx.Exception, "Unhandled exception occurred");
+            ctx.ProblemDetails.Detail = ctx.Exception.Message;
+        }
+    };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+
+// Exception handling - MUST be first in pipeline
+app.UseExceptionHandler();
 
 // CORS
 app.UseCors("AllowFrontend");
