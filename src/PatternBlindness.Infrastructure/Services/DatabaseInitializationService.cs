@@ -93,12 +93,28 @@ public class DatabaseInitializationService : IHostedService
 
           using (var command = connection.CreateCommand())
           {
-            // These are safe no-ops if columns already exist
+            // First, ensure tables and their columns exist
             var sqlStatements = new[]
             {
+              // LeetCodeProblemCache table columns
+              @"ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN IF NOT EXISTS ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;",
+              @"ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone;",
+              @"ALTER TABLE ""LeetCodeProblemCache"" ADD COLUMN IF NOT EXISTS ""Slug"" character varying(200);",
+              
+              // ProblemAnalyses table columns  
+              @"ALTER TABLE ""ProblemAnalyses"" ADD COLUMN IF NOT EXISTS ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;",
+              @"ALTER TABLE ""ProblemAnalyses"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone;",
+              
+              // Reflections table columns
+              @"ALTER TABLE ""Reflections"" ADD COLUMN IF NOT EXISTS ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP;",
+              @"ALTER TABLE ""Reflections"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone;",
+              
+              // Attempts table columns
               @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ChosenPatternName"" character varying(100);",
               @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ChosenPatternId"" uuid;",
               @"ALTER TABLE ""Attempts"" ADD COLUMN IF NOT EXISTS ""ProblemId"" uuid;",
+              
+              // ColdStartSubmissions table columns
               @"ALTER TABLE ""ColdStartSubmissions"" ADD COLUMN IF NOT EXISTS ""IdentifiedSignals"" jsonb DEFAULT '[]';"
             };
 
