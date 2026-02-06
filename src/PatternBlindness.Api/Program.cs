@@ -18,8 +18,24 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 // Database & Infrastructure
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Try to load from environment variable directly (Render uses this)
+    var envConnString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+    if (!string.IsNullOrEmpty(envConnString))
+    {
+        connectionString = envConnString;
+    }
+    else
+    {
+        throw new InvalidOperationException(
+            "Connection string 'DefaultConnection' not found. " +
+            "Please set ConnectionStrings__DefaultConnection environment variable on Render.");
+    }
+}
+
 builder.Services.AddInfrastructure(connectionString);
 
 // Identity & Authentication
@@ -124,3 +140,4 @@ app.Run();
 
 // Make Program class partial for integration tests
 public partial class Program { }
+// Deployed: Thu Feb  5 18:12:16 CST 2026
