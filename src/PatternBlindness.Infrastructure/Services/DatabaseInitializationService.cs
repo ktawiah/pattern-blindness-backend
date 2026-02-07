@@ -80,7 +80,7 @@ public class DatabaseInitializationService : IHostedService
         }
         catch (Exception ex)
         {
-          _logger.LogError(ex, "❌ Error during database migrations");
+          _logger.LogError(ex, "Error during database migrations");
           throw;
         }
 
@@ -178,6 +178,9 @@ BEGIN
     ALTER TABLE ""Attempts"" ADD COLUMN ""ProblemId"" uuid;
   END IF;
 
+  -- Ensure ProblemId is nullable (FK is optional in EF config)
+  ALTER TABLE ""Attempts"" ALTER COLUMN ""ProblemId"" DROP NOT NULL;
+
   -- Add missing columns to ColdStartSubmissions if they don't exist
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ColdStartSubmissions' AND column_name = 'IdentifiedSignals') THEN
     ALTER TABLE ""ColdStartSubmissions"" ADD COLUMN ""IdentifiedSignals"" jsonb DEFAULT '[]';
@@ -244,14 +247,14 @@ END $$;
         }
         catch (Exception ex)
         {
-          _logger.LogError(ex, "❌ Error during database seeding - continuing with partial data");
+          _logger.LogError(ex, "Error during database seeding - continuing with partial data");
           // Don't rethrow for seeding - allow app to continue
         }
       }
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "❌ Critical error during database initialization. The application will continue running.");
+      _logger.LogError(ex, "Critical error during database initialization. The application will continue running.");
       // Don't throw - we want the app to stay running even if migrations fail
     }
     finally
