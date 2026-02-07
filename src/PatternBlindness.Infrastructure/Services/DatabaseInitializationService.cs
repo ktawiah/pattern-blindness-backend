@@ -101,18 +101,18 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'LeetCodeProblemCache') THEN
     CREATE TABLE ""LeetCodeProblemCache"" (
       ""Id"" uuid NOT NULL PRIMARY KEY,
-      ""LeetCodeId"" character varying(50),
-      ""FrontendId"" character varying(20),
-      ""Title"" character varying(500),
-      ""TitleSlug"" character varying(500),
-      ""Difficulty"" character varying(20),
-      ""Content"" text,
+      ""LeetCodeId"" character varying(50) NOT NULL,
+      ""FrontendId"" character varying(20) NOT NULL,
+      ""Title"" character varying(500) NOT NULL,
+      ""TitleSlug"" character varying(500) NOT NULL,
+      ""Difficulty"" character varying(20) NOT NULL,
+      ""Content"" text NOT NULL,
       ""Tags"" jsonb DEFAULT '[]',
       ""Examples"" jsonb DEFAULT '[]',
       ""Hints"" jsonb DEFAULT '[]',
       ""AcceptanceRate"" double precision,
-      ""CachedAt"" timestamp with time zone,
-      ""LastRefreshedAt"" timestamp with time zone,
+      ""CachedAt"" timestamp with time zone NOT NULL,
+      ""LastRefreshedAt"" timestamp with time zone NOT NULL,
       ""CreatedAt"" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
       ""UpdatedAt"" timestamp with time zone
     );
