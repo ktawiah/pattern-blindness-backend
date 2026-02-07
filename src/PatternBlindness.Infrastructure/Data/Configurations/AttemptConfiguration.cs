@@ -70,7 +70,8 @@ public class AttemptConfiguration : IEntityTypeConfiguration<Attempt>
         builder.HasOne(a => a.ChosenPattern)
             .WithMany()
             .HasForeignKey(a => a.ChosenPatternId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
 
         // One-to-one with ColdStartSubmission
         builder.HasOne(a => a.ColdStartSubmission)

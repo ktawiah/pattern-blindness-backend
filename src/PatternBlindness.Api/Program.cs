@@ -91,7 +91,7 @@ builder.Services.AddCors(options =>
     {
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:3000"];
-        
+
         policy.WithOrigins(allowedOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -108,9 +108,9 @@ builder.Services.AddProblemDetails(options =>
     options.CustomizeProblemDetails = ctx =>
     {
         ctx.ProblemDetails.Instance = $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}";
-        
+
         var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-        
+
         if (ctx.Exception is not null)
         {
             logger.LogError(ctx.Exception, "Unhandled exception occurred");
