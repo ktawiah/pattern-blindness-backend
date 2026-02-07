@@ -115,6 +115,18 @@ builder.Services.AddProblemDetails(options =>
         {
             logger.LogError(ctx.Exception, "Unhandled exception occurred");
             ctx.ProblemDetails.Detail = ctx.Exception.Message;
+            
+            // Include inner exception details for database errors
+            var innerEx = ctx.Exception.InnerException;
+            if (innerEx is not null)
+            {
+                logger.LogError(innerEx, "Inner exception");
+                ctx.ProblemDetails.Extensions["innerException"] = innerEx.Message;
+                if (innerEx.InnerException is not null)
+                {
+                    ctx.ProblemDetails.Extensions["rootCause"] = innerEx.InnerException.Message;
+                }
+            }
         }
     };
 });
