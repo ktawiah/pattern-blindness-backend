@@ -27,12 +27,11 @@ public static class DependencyInjection
         .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
     // Register repositories
-    services.AddScoped<IPatternRepository, PatternRepository>();
+    // Note: Pattern and DataStructure repositories removed - data now in frontend JSON
     services.AddScoped<IProblemRepository, ProblemRepository>();
     services.AddScoped<IAttemptRepository, AttemptRepository>();
     services.AddScoped<ILeetCodeProblemCacheRepository, LeetCodeProblemCacheRepository>();
     services.AddScoped<IAnalysisRepository, AnalysisRepository>();
-    services.AddScoped<IDataStructureRepository, DataStructureRepository>();
     services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 
     // Register HTTP client and LeetCode service

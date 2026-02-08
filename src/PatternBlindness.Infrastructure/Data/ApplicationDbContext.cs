@@ -15,7 +15,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   {
   }
 
-  public DbSet<Pattern> Patterns => Set<Pattern>();
+  // Note: Pattern and DataStructure tables removed - data now in frontend JSON files
   public DbSet<Problem> Problems => Set<Problem>();
   public DbSet<WrongApproach> WrongApproaches => Set<WrongApproach>();
   public DbSet<Attempt> Attempts => Set<Attempt>();
@@ -23,7 +23,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   public DbSet<LeetCodeProblemCache> LeetCodeProblemCache => Set<LeetCodeProblemCache>();
   public DbSet<ProblemAnalysis> ProblemAnalyses => Set<ProblemAnalysis>();
   public DbSet<Reflection> Reflections => Set<Reflection>();
-  public DbSet<DataStructure> DataStructures => Set<DataStructure>();
   public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)

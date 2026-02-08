@@ -115,7 +115,7 @@ builder.Services.AddProblemDetails(options =>
         {
             logger.LogError(ctx.Exception, "Unhandled exception occurred");
             ctx.ProblemDetails.Detail = ctx.Exception.Message;
-            
+
             // Include inner exception details for database errors
             var innerEx = ctx.Exception.InnerException;
             if (innerEx is not null)
@@ -158,9 +158,8 @@ app.MapHealthChecks("/health");
 
 // Map API endpoints
 app.MapAuthEndpoints();
-app.MapPatternEndpoints();
+// Note: Pattern and DataStructure endpoints removed - data now in frontend JSON
 app.MapPatternTrackingEndpoints();
-app.MapDataStructureEndpoints();
 app.MapProblemEndpoints();
 app.MapAttemptEndpoints();
 app.MapLeetCodeEndpoints();

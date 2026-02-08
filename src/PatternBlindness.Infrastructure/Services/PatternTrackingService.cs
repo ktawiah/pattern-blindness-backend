@@ -30,10 +30,11 @@ public class PatternTrackingService : IPatternTrackingService
             .Where(a => a.UserId == userId
                 && a.Status == AttemptStatus.Solved
                 && a.ChosenPatternId.HasValue)
-            .GroupBy(a => a.ChosenPatternId!.Value)
+            .GroupBy(a => new { a.ChosenPatternId, a.ChosenPatternName })
             .Select(g => new
             {
-                PatternId = g.Key,
+                PatternId = g.Key.ChosenPatternId!.Value,
+                PatternName = g.Key.ChosenPatternName ?? "Unknown",
                 LastUsedAt = g.Max(a => a.CompletedAt ?? a.StartedAt),
                 TotalTimesUsed = g.Count(),
                 CorrectCount = g.Count(a => a.IsPatternCorrect)
@@ -41,25 +42,17 @@ public class PatternTrackingService : IPatternTrackingService
             .ToListAsync(ct);
 
         // Filter for decaying patterns
-        var decayingPatternIds = userPatternUsage
+        var decayingPatterns = userPatternUsage
             .Where(p => p.LastUsedAt < cutoffDate)
-            .Select(p => p.PatternId)
             .ToList();
 
-        if (decayingPatternIds.Count == 0)
+        if (decayingPatterns.Count == 0)
             return [];
 
-        // Get pattern names
-        var patterns = await _context.Patterns
-            .AsNoTracking()
-            .Where(p => decayingPatternIds.Contains(p.Id))
-            .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
-
-        return userPatternUsage
-            .Where(p => decayingPatternIds.Contains(p.PatternId))
+        return decayingPatterns
             .Select(p => new DecayingPatternInfo(
                 p.PatternId,
-                patterns.GetValueOrDefault(p.PatternId, "Unknown"),
+                p.PatternName,
                 p.LastUsedAt,
                 (int)(DateTime.UtcNow - p.LastUsedAt).TotalDays,
                 p.TotalTimesUsed,
@@ -88,10 +81,11 @@ public class PatternTrackingService : IPatternTrackingService
             .Where(a => a.UserId == userId
                 && a.Status == AttemptStatus.Solved
                 && a.ChosenPatternId.HasValue)
-            .GroupBy(a => a.ChosenPatternId!.Value)
+            .GroupBy(a => new { a.ChosenPatternId, a.ChosenPatternName })
             .Select(g => new
             {
-                PatternId = g.Key,
+                PatternId = g.Key.ChosenPatternId!.Value,
+                PatternName = g.Key.ChosenPatternName ?? "Unknown",
                 TimesChosen = g.Count(),
                 CorrectCount = g.Count(a => a.IsPatternCorrect)
             })
@@ -100,13 +94,6 @@ public class PatternTrackingService : IPatternTrackingService
 
         if (patternUsage.Count == 0)
             return [];
-
-        // Get pattern names
-        var patternIds = patternUsage.Select(p => p.PatternId).ToList();
-        var patterns = await _context.Patterns
-            .AsNoTracking()
-            .Where(p => patternIds.Contains(p.Id))
-            .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
 
         // Calculate consecutive choices for each pattern (simplified - checks last N attempts)
         var consecutiveChoices = new Dictionary<Guid, int>();
@@ -120,6 +107,7 @@ public class PatternTrackingService : IPatternTrackingService
             .Select(a => a.ChosenPatternId!.Value)
             .ToListAsync(ct);
 
+        var patternIds = patternUsage.Select(p => p.PatternId).ToList();
         foreach (var patternId in patternIds)
         {
             var count = 0;
@@ -136,7 +124,7 @@ public class PatternTrackingService : IPatternTrackingService
         return patternUsage
             .Select(p => new DefaultPatternInfo(
                 p.PatternId,
-                patterns.GetValueOrDefault(p.PatternId, "Unknown"),
+                p.PatternName,
                 p.TimesChosen,
                 consecutiveChoices.GetValueOrDefault(p.PatternId, 0),
                 (double)p.TimesChosen / totalAttempts * 100,
@@ -188,16 +176,19 @@ public class PatternTrackingService : IPatternTrackingService
         if (avoidedPatterns.Count == 0)
             return [];
 
-        var patterns = await _context.Patterns
+        // Get pattern names from user's attempts where they chose these patterns
+        var patternNames = await _context.Attempts
             .AsNoTracking()
-            .Where(p => avoidedPatterns.Contains(p.Id))
-            .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
+            .Where(a => a.ChosenPatternId.HasValue && avoidedPatterns.Contains(a.ChosenPatternId.Value))
+            .GroupBy(a => a.ChosenPatternId!.Value)
+            .Select(g => new { PatternId = g.Key, PatternName = g.First().ChosenPatternName ?? "Unknown" })
+            .ToDictionaryAsync(p => p.PatternId, p => p.PatternName, ct);
 
         return correctPatternStats
             .Where(p => avoidedPatterns.Contains(p.PatternId))
             .Select(p => new AvoidedPatternInfo(
                 p.PatternId,
-                patterns.GetValueOrDefault(p.PatternId, "Unknown"),
+                patternNames.GetValueOrDefault(p.PatternId, "Unknown"),
                 p.TimesCorrectAnswer,
                 p.TimesUserChoseIt))
             .OrderByDescending(p => p.TimesCorrectAnswer)
@@ -226,9 +217,8 @@ public class PatternTrackingService : IPatternTrackingService
             .Distinct()
             .CountAsync(ct);
 
-        var totalPatterns = await _context.Patterns
-            .AsNoTracking()
-            .CountAsync(ct);
+        // Note: totalPatterns is hardcoded to 16 since patterns are now in frontend JSON
+        const int totalPatterns = 16;
 
         return new PatternUsageStatsResult(
             decaying,
@@ -263,17 +253,17 @@ public class PatternTrackingService : IPatternTrackingService
         if (!recentPatternIds.All(id => id == patternId))
             return null;
 
-        var pattern = await _context.Patterns
+        // Get pattern name from the most recent attempt with this pattern ID
+        var patternName = await _context.Attempts
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == patternId, ct);
-
-        if (pattern == null)
-            return null;
+            .Where(a => a.ChosenPatternId == patternId)
+            .Select(a => a.ChosenPatternName)
+            .FirstOrDefaultAsync(ct) ?? "Unknown";
 
         return new PatternNudge(
             patternId,
-            pattern.Name,
+            patternName,
             recentPatternIds.Count,
-            $"You've chosen {pattern.Name} for your last {recentPatternIds.Count} problems. Consider if another pattern might apply.");
+            $"You've chosen {patternName} for your last {recentPatternIds.Count} problems. Consider if another pattern might apply.");
     }
 }
