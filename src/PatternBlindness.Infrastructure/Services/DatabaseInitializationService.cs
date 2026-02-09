@@ -97,6 +97,84 @@ public class DatabaseInitializationService : IHostedService
             var sqlScript = @"
 DO $$
 BEGIN
+  -- Create Patterns table if it doesn't exist (required for FK integrity)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'Patterns') THEN
+    CREATE TABLE ""Patterns"" (
+      ""Id"" uuid NOT NULL PRIMARY KEY,
+      ""Name"" character varying(100) NOT NULL,
+      ""Description"" character varying(2000) NOT NULL DEFAULT '',
+      ""Category"" character varying(50) NOT NULL,
+      ""WhatItIs"" text NOT NULL DEFAULT '',
+      ""WhenToUse"" text NOT NULL DEFAULT '',
+      ""WhyItWorks"" text NOT NULL DEFAULT '',
+      ""CommonUseCases"" jsonb NOT NULL DEFAULT '[]',
+      ""TimeComplexity"" character varying(100) NOT NULL DEFAULT '',
+      ""SpaceComplexity"" character varying(100) NOT NULL DEFAULT '',
+      ""PseudoCode"" text NOT NULL DEFAULT '',
+      ""TriggerSignals"" jsonb NOT NULL DEFAULT '[]',
+      ""CommonMistakes"" jsonb NOT NULL DEFAULT '[]',
+      ""Resources"" jsonb NOT NULL DEFAULT '[]',
+      ""RelatedPatternIds"" jsonb NOT NULL DEFAULT '[]',
+      ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      ""UpdatedAt"" timestamp with time zone
+    );
+    CREATE UNIQUE INDEX ""IX_Patterns_Name"" ON ""Patterns"" (""Name"");
+    CREATE INDEX ""IX_Patterns_Category"" ON ""Patterns"" (""Category"");
+  END IF;
+
+  -- Create DataStructures table if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'DataStructures') THEN
+    CREATE TABLE ""DataStructures"" (
+      ""Id"" uuid NOT NULL PRIMARY KEY,
+      ""Name"" character varying(100) NOT NULL,
+      ""Description"" character varying(2000) NOT NULL DEFAULT '',
+      ""Category"" character varying(50) NOT NULL,
+      ""WhatItIs"" text NOT NULL DEFAULT '',
+      ""Operations"" jsonb NOT NULL DEFAULT '[]',
+      ""WhenToUse"" text NOT NULL DEFAULT '',
+      ""Tradeoffs"" text NOT NULL DEFAULT '',
+      ""CommonUseCases"" jsonb NOT NULL DEFAULT '[]',
+      ""Implementation"" text NOT NULL DEFAULT '',
+      ""Resources"" jsonb NOT NULL DEFAULT '[]',
+      ""RelatedStructureIds"" jsonb NOT NULL DEFAULT '[]',
+      ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      ""UpdatedAt"" timestamp with time zone
+    );
+    CREATE UNIQUE INDEX ""IX_DataStructures_Name"" ON ""DataStructures"" (""Name"");
+    CREATE INDEX ""IX_DataStructures_Category"" ON ""DataStructures"" (""Category"");
+  END IF;
+
+  -- Restore FK constraints to Patterns if they were dropped
+  IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK_Problems_Patterns_CorrectPatternId') THEN
+    ALTER TABLE ""Problems"" ADD CONSTRAINT ""FK_Problems_Patterns_CorrectPatternId""
+      FOREIGN KEY (""CorrectPatternId"") REFERENCES ""Patterns""(""Id"") ON DELETE RESTRICT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK_WrongApproaches_Patterns_WrongPatternId') THEN
+    ALTER TABLE ""WrongApproaches"" ADD CONSTRAINT ""FK_WrongApproaches_Patterns_WrongPatternId""
+      FOREIGN KEY (""WrongPatternId"") REFERENCES ""Patterns""(""Id"") ON DELETE RESTRICT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK_ColdStartSubmissions_Patterns_ChosenPatternId') THEN
+    ALTER TABLE ""ColdStartSubmissions"" ADD CONSTRAINT ""FK_ColdStartSubmissions_Patterns_ChosenPatternId""
+      FOREIGN KEY (""ChosenPatternId"") REFERENCES ""Patterns""(""Id"") ON DELETE RESTRICT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK_ColdStartSubmissions_Patterns_SecondaryPatternId') THEN
+    ALTER TABLE ""ColdStartSubmissions"" ADD CONSTRAINT ""FK_ColdStartSubmissions_Patterns_SecondaryPatternId""
+      FOREIGN KEY (""SecondaryPatternId"") REFERENCES ""Patterns""(""Id"") ON DELETE RESTRICT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK_ColdStartSubmissions_Patterns_RejectedPatternId') THEN
+    ALTER TABLE ""ColdStartSubmissions"" ADD CONSTRAINT ""FK_ColdStartSubmissions_Patterns_RejectedPatternId""
+      FOREIGN KEY (""RejectedPatternId"") REFERENCES ""Patterns""(""Id"") ON DELETE RESTRICT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK_Attempts_Patterns_ChosenPatternId') THEN
+    ALTER TABLE ""Attempts"" ADD CONSTRAINT ""FK_Attempts_Patterns_ChosenPatternId""
+      FOREIGN KEY (""ChosenPatternId"") REFERENCES ""Patterns""(""Id"") ON DELETE RESTRICT;
+  END IF;
+
   -- Create LeetCodeProblemCache table if it doesn't exist
   IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'LeetCodeProblemCache') THEN
     CREATE TABLE ""LeetCodeProblemCache"" (

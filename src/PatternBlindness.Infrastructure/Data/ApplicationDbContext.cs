@@ -15,7 +15,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   {
   }
 
-  // Note: Pattern and DataStructure tables removed - data now in frontend JSON files
+  public DbSet<Pattern> Patterns => Set<Pattern>();
+  public DbSet<DataStructure> DataStructures => Set<DataStructure>();
   public DbSet<Problem> Problems => Set<Problem>();
   public DbSet<WrongApproach> WrongApproaches => Set<WrongApproach>();
   public DbSet<Attempt> Attempts => Set<Attempt>();

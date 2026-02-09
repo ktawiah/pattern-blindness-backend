@@ -10,40 +10,26 @@ namespace PatternBlindness.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Add missing columns to Attempts table
-            migrationBuilder.AddColumn<Guid>(
-                name: "LeetCodeProblemCacheId",
-                table: "Attempts",
-                type: "uuid",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "ChosenPatternName",
-                table: "Attempts",
-                type: "character varying(100)",
-                maxLength: 100,
-                nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "ChosenPatternId",
-                table: "Attempts",
-                type: "uuid",
-                nullable: true);
-
-            // Add missing columns to ColdStartSubmissions if needed
-            migrationBuilder.AddColumn<string>(
-                name: "IdentifiedSignals",
-                table: "ColdStartSubmissions",
-                type: "jsonb",
-                nullable: false,
-                defaultValue: "[]");
-
-            // Add missing column to Attempts if needed
-            migrationBuilder.AddColumn<Guid>(
-                name: "ProblemId",
-                table: "Attempts",
-                type: "uuid",
-                nullable: true);
+            // Conditionally add columns that may already exist from InitialCreate
+            migrationBuilder.Sql(@"
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Attempts' AND column_name='LeetCodeProblemCacheId') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""LeetCodeProblemCacheId"" uuid;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Attempts' AND column_name='ChosenPatternName') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""ChosenPatternName"" character varying(100);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Attempts' AND column_name='ChosenPatternId') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""ChosenPatternId"" uuid;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='ColdStartSubmissions' AND column_name='IdentifiedSignals') THEN
+    ALTER TABLE ""ColdStartSubmissions"" ADD COLUMN ""IdentifiedSignals"" jsonb NOT NULL DEFAULT '[]';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Attempts' AND column_name='ProblemId') THEN
+    ALTER TABLE ""Attempts"" ADD COLUMN ""ProblemId"" uuid;
+  END IF;
+END $$;
+");
 
             // Create LeetCodeProblemCache table
             migrationBuilder.CreateTable(
@@ -129,13 +115,6 @@ namespace PatternBlindness.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            // Add LeetCodeProblemCacheId column to Attempts table if it doesn't exist
-            migrationBuilder.AddColumn<Guid>(
-                name: "LeetCodeProblemCacheId",
-                table: "Attempts",
-                type: "uuid",
-                nullable: true);
 
             // Create indexes
             migrationBuilder.CreateIndex(

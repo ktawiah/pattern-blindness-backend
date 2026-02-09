@@ -27,7 +27,7 @@ public static class DependencyInjection
         .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
     // Register repositories
-    // Note: Pattern and DataStructure repositories removed - data now in frontend JSON
+    services.AddScoped<IPatternRepository, PatternRepository>();
     services.AddScoped<IProblemRepository, ProblemRepository>();
     services.AddScoped<IAttemptRepository, AttemptRepository>();
     services.AddScoped<ILeetCodeProblemCacheRepository, LeetCodeProblemCacheRepository>();

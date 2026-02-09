@@ -381,33 +381,104 @@ namespace PatternBlindness.Infrastructure.Migrations
                     b.ToTable("LeetCodeProblemCache");
                 });
 
-            modelBuilder.Entity("PatternBlindness.Domain.Entities.Pattern", b =>
+            modelBuilder.Entity("PatternBlindness.Domain.Entities.DataStructure", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("CommonMistakes")
+                    b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("CommonUseCases")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Implementation")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Operations")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("RelatedStructureIds")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Resources")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Tradeoffs")
+                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("WhatItIs")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("WhenToUse")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("DataStructures", (string)null);
+                });
+
+            modelBuilder.Entity("PatternBlindness.Domain.Entities.Pattern", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CommonMistakes")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("CommonUseCases")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("PseudoCode")
                         .IsRequired()
@@ -415,23 +486,25 @@ namespace PatternBlindness.Infrastructure.Migrations
 
                     b.Property<string>("RelatedPatternIds")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("Resources")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("SpaceComplexity")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("TimeComplexity")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("TriggerSignals")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -450,7 +523,12 @@ namespace PatternBlindness.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pattern");
+                    b.HasIndex("Category");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Patterns", (string)null);
                 });
 
             modelBuilder.Entity("PatternBlindness.Domain.Entities.Problem", b =>
