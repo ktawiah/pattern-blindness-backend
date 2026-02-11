@@ -75,7 +75,7 @@ A deliberate practice platform for interview preparation that trains engineers t
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/PatternBlindness.git
+git clone https://github.com/ktawiah/PatternBlindness.git
 cd PatternBlindness/pattern-blindness-backend
 
 # Start the entire stack (API + Database)
@@ -348,5 +348,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Questions?** Open an issue on [GitHub](https://github.com/yourusername/PatternBlindness/issues) or contact the maintainers.
+**Questions?** Open an issue on [GitHub](https://github.com/ktawiah/PatternBlindness/issues) or contact the maintainers.
 

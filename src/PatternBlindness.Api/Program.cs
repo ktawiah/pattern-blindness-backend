@@ -32,7 +32,7 @@ if (string.IsNullOrEmpty(connectionString))
     {
         throw new InvalidOperationException(
             "Connection string 'DefaultConnection' not found. " +
-            "Please set ConnectionStrings__DefaultConnection environment variable on Render.");
+            "Please set ConnectionStrings__DefaultConnection environment variable.");
     }
 }
 
